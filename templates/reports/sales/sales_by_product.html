@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Sales by Product Report - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Reports
+                    </a>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-box me-2"></i>Sales by Product Report
+                    </h1>
+                    <p class="text-muted mt-2">Top 20 products by revenue</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary me-2" onclick="handleExportPDF('sales-by-product')">
+                        <i class="fas fa-download me-1"></i>Export PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Total Revenue</p>
+                    <h3 class="mb-0">${{ total_revenue|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Units Sold</p>
+                    <h3 class="mb-0">{{ total_units }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Top Product</p>
+                    <h3 class="mb-0" style="font-size: 18px;">{% if product_sales %}Top Product{% else %}N/A{% endif %}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Top Products by Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productsChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Breakdown Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Product Sales Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>SKU</th>
+                                    <th>Units Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Avg Price</th>
+                                    <th>% of Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in product_sales %}
+                                <tr>
+                                    <td><strong>{{ product.line_items__product__name }}</strong></td>
+                                    <td><code>{{ product.line_items__product__sku }}</code></td>
+                                    <td>{{ product.units_sold }}</td>
+                                    <td><span class="badge bg-success">${{ product.revenue|floatformat:2 }}</span></td>
+                                    <td>${{ product.avg_price|floatformat:2 }}</td>
+                                    <td>
+                                        {% if total_revenue %}
+                                            {% widthratio product.revenue total_revenue 100 %}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script>
+    const ctx = document.getElementById('productsChart').getContext('2d');
+    
+    const products = [
+        {% for product in product_sales %}'{{ product.line_items__product__name }}'{% if not forloop.last %},{% endif %}{% endfor %}
+    ];
+    const revenue = [
+        {% for product in product_sales %}{{ product.revenue|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+    ];
+    
+    new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: products,
+            datasets: [{
+                label: 'Revenue',
+                data: revenue,
+                backgroundColor: '#0066cc'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

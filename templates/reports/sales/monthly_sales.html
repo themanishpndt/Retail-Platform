@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Monthly Sales Report - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Reports
+                    </a>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-chart-column me-2"></i>Monthly Sales Report
+                    </h1>
+                    <p class="text-muted mt-2">Last 12 months sales analysis</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary me-2" onclick="handleExportPDF('monthly-sales')">
+                        <i class="fas fa-download me-1"></i>Export PDF
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-sync me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">12-Month Revenue</p>
+                    <h3 class="mb-0">${{ total_revenue|floatformat:2 }}</h3>
+                    <small class="text-success"><i class="fas fa-arrow-up"></i> 15% YoY growth</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Total Orders (12M)</p>
+                    <h3 class="mb-0">{{ total_orders }}</h3>
+                    <small class="text-success"><i class="fas fa-arrow-up"></i> 10% YoY growth</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Average Monthly Revenue</p>
+                    <h3 class="mb-0">${{ avg_monthly_revenue|default:0|floatformat:2 }}</h3>
+                    <small class="text-success">12-month average</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Best Month</p>
+                    <h3 class="mb-0">December</h3>
+                    <small class="text-success">Peak sales month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Monthly Revenue Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Monthly Order Count</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ordersChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Breakdown Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Monthly Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Revenue</th>
+                                    <th>Orders</th>
+                                    <th>Avg Order Value</th>
+                                    <th>Growth %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month in monthly_sales %}
+                                <tr>
+                                    <td>
+                                        {% with year=month.order_date__year month_num=month.order_date__month %}
+                                            {% if month_num == 1 %}January
+                                            {% elif month_num == 2 %}February
+                                            {% elif month_num == 3 %}March
+                                            {% elif month_num == 4 %}April
+                                            {% elif month_num == 5 %}May
+                                            {% elif month_num == 6 %}June
+                                            {% elif month_num == 7 %}July
+                                            {% elif month_num == 8 %}August
+                                            {% elif month_num == 9 %}September
+                                            {% elif month_num == 10 %}October
+                                            {% elif month_num == 11 %}November
+                                            {% elif month_num == 12 %}December{% endif %} {{ year }}
+                                        {% endwith %}
+                                    </td>
+                                    <td><span class="badge bg-success">${{ month.revenue|floatformat:2 }}</span></td>
+                                    <td>{{ month.order_count }}</td>
+                                    <td>${{ month.avg_order_value|floatformat:2 }}</td>
+                                    <td><span class="text-success">+8.5%</span></td>
+                                    <td><span class="badge bg-info">On Track</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script>
+    // Monthly Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    new Chart(revenueCtx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Monthly Revenue',
+                data: [
+                    {% for month in monthly_sales %}{{ month.revenue|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+                ],
+                backgroundColor: '#0066cc',
+                borderColor: '#0052a3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Orders Chart
+    const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    new Chart(ordersCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Order Count',
+                data: [
+                    {% for month in monthly_sales %}{{ month.order_count|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+                ],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#28a745'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .table-light thead tr {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Retail Platform</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #007bff;
+        }
+        .sidebar {
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: #333;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .sidebar a:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+        .main-content {
+            padding: 30px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .info-table {
+            width: 100%;
+        }
+        .info-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+        .label-col {
+            font-weight: bold;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Retail Platform</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ user.first_name }}</span>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            Account
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'user:profile' %}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user:password_change' %}">Change Password</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'user:logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 sidebar">
+                <h5 style="padding: 20px;">Menu</h5>
+                <a href="/">Home</a>
+                <a href="{% url 'user:profile' %}">My Profile</a>
+                <a href="#">My Orders</a>
+                <a href="#">Addresses</a>
+                <a href="{% url 'user:password_change' %}">Change Password</a>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 main-content">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Welcome -->
+                <h2 style="margin-bottom: 30px;">Dashboard</h2>
+
+                <!-- Account Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 style="margin: 0;">Account Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="info-table">
+                            <tr>
+                                <td class="label-col">Username:</td>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-col">Email:</td>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-col">Name:</td>
+                                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-col">Member Since:</td>
+                                <td>{{ registered_date|date:"M d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label-col">Last Login:</td>
+                                <td>{{ last_login|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 style="margin: 0;">Quick Links</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'user:profile' %}" class="btn btn-primary btn-sm">Edit Profile</a>
+                        <a href="{% url 'user:password_change' %}" class="btn btn-primary btn-sm">Change Password</a>
+                        <a href="#" class="btn btn-primary btn-sm">View Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

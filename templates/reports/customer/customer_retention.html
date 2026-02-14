@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Retention Report - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="fas fa-arrow-left me-1"></i>Back to Reports
+            </a>
+            <h1 class="h2 mb-0"><i class="fas fa-handshake me-2"></i>Customer Retention Report</h1>
+            <p class="text-muted mt-2">Last 30 days retention metrics</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Recent Customers (30 days)</p>
+                    <h3 class="mb-0">{{ recent_customers }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Repeat Customers</p>
+                    <h3 class="mb-0">{{ recurring_customers }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Retention Rate</p>
+                    <h3 class="mb-0">{{ retention_rate|floatformat:1 }}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Retention Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Retention Metrics</h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>New Customers</span>
+                                    <strong>{{ recent_customers }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Returning Customers</span>
+                                    <strong>{{ recurring_customers }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Retention Rate</span>
+                                    <strong class="text-success">{{ retention_rate|floatformat:1 }}%</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Churn Rate</span>
+                                    <strong class="text-danger">{{ churn_rate|floatformat:1 }}%</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="retentionChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script>
+    new Chart(document.getElementById('retentionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Returning Customers', 'Churned Customers'],
+            datasets: [{
+                data: [{{ retention_rate|floatformat:1 }}, {{ 100|add:"-retention_rate"|floatformat:1 }}],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+</script>
+{% endblock %}

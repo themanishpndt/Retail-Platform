@@ -1,0 +1,8 @@
+<!-- Favicon as inline SVG -->
+<!-- This is a simple icon that will be served as favicon -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0d47a1"/>
+    <path d="M30 20 L70 20 L75 35 L75 75 Q75 80 70 80 L30 80 Q25 80 25 75 L25 35 Z" fill="#1976d2" stroke="white" stroke-width="2"/>
+    <rect x="35" y="40" width="30" height="25" fill="white" rx="2"/>
+    <circle cx="50" cy="55" r="4" fill="#0d47a1"/>
+</svg>

@@ -1,0 +1,547 @@
+/* ============================================================
+   RETAIL PLATFORM - CUSTOM ADMIN STYLING
+   ============================================================ */
+
+:root {
+    --primary-color: #0056b3;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --light-bg: #f8f9fa;
+    --border-color: #dee2e6;
+    --text-muted: #6c757d;
+}
+
+/* ============================================================
+   GENERAL STYLING
+   ============================================================ */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* ============================================================
+   ADMIN HEADER
+   ============================================================ */
+
+.admin-header {
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 3px solid #003d82;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#site-name a {
+    color: white !important;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#site-name a:hover {
+    color: #e0e0e0 !important;
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.user-info {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+#header nav {
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0;
+}
+
+#header nav a {
+    color: var(--primary-color);
+    padding: 0.75rem 1rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+#header nav a:hover {
+    color: var(--primary-color);
+    background-color: var(--light-bg);
+}
+
+/* ============================================================
+   DASHBOARD STYLING
+   ============================================================ */
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.dashboard-header {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.dashboard-header h1 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 2rem;
+}
+
+.dashboard-subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-module {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-module:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-module h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--light-bg);
+    padding-bottom: 0.75rem;
+}
+
+/* ============================================================
+   QUICK NAVIGATION CARDS
+   ============================================================ */
+
+.quick-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--light-bg) 0%, white 100%);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.nav-card:hover {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #003d82 100%);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3);
+}
+
+.nav-card .icon {
+    font-size: 2rem;
+}
+
+.nav-card .label {
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* ============================================================
+   SYSTEM INFO
+   ============================================================ */
+
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--light-bg);
+}
+
+.info-item .label {
+    font-weight: 600;
+    color: #333;
+}
+
+.info-item .value {
+    color: var(--text-muted);
+}
+
+.badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.badge.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* ============================================================
+   APP LIST SECTION
+   ============================================================ */
+
+.app-list-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.app-list-section h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--light-bg);
+    padding-bottom: 0.75rem;
+}
+
+.app-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.app-module {
+    background: var(--light-bg);
+    padding: 1.25rem;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.app-module h3 {
+    margin: 0 0 1rem 0;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.module-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.module-list li {
+    margin-bottom: 0.5rem;
+}
+
+.module-list a {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0.35rem 0.5rem;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.module-list a:hover {
+    background-color: rgba(0, 86, 179, 0.1);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   CHANGE LIST (Table Views)
+   ============================================================ */
+
+.change-list-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.change-list-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--light-bg);
+    padding-bottom: 1rem;
+}
+
+.change-list-header h1 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table thead th {
+    background-color: var(--light-bg);
+    color: #333;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+}
+
+table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table tbody tr:hover {
+    background-color: #fafbfc;
+}
+
+/* ============================================================
+   FILTERS & SEARCH
+   ============================================================ */
+
+#changelist-filter {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    width: 250px;
+    margin-top: 1.5rem;
+}
+
+#changelist-filter h2 {
+    font-size: 1rem;
+    color: var(--primary-color);
+    margin: 0 0 1rem 0;
+    border-bottom: 2px solid var(--light-bg);
+    padding-bottom: 0.5rem;
+}
+
+#changelist-filter ul {
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    list-style: none;
+}
+
+#changelist-filter li {
+    margin-bottom: 0.5rem;
+}
+
+#changelist-filter a {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0.35rem 0.5rem;
+    border-radius: 3px;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+#changelist-filter a:hover {
+    background-color: rgba(0, 86, 179, 0.1);
+}
+
+#changelist-filter .selected a {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+form .submit-row {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    margin: 1rem -1.5rem -1.5rem;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+input[type="submit"],
+.button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+input[type="submit"]:hover,
+.button:hover {
+    background-color: #003d82;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 86, 179, 0.3);
+}
+
+input[type="submit"].deletelink,
+.deletelink {
+    background-color: var(--danger-color);
+}
+
+input[type="submit"].deletelink:hover,
+.deletelink:hover {
+    background-color: #c82333;
+}
+
+/* ============================================================
+   FIELDSETS & COLLAPSIBLE SECTIONS
+   ============================================================ */
+
+fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+fieldset.collapse {
+    border-color: var(--border-color);
+}
+
+fieldset.collapse > legend {
+    background-color: var(--light-bg);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+fieldset > legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 0 0.5rem;
+}
+
+/* ============================================================
+   ALERTS & MESSAGES
+   ============================================================ */
+
+.messagelist li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    border-left: 4px solid var(--border-color);
+}
+
+.messagelist .success {
+    background-color: #d4edda;
+    border-left-color: var(--success-color);
+    color: #155724;
+}
+
+.messagelist .error {
+    background-color: #f8d7da;
+    border-left-color: var(--danger-color);
+    color: #721c24;
+}
+
+.messagelist .warning {
+    background-color: #fff3cd;
+    border-left-color: var(--warning-color);
+    color: #856404;
+}
+
+.messagelist .info {
+    background-color: #d1ecf1;
+    border-left-color: var(--info-color);
+    color: #0c5460;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .quick-nav {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .app-list {
+        grid-template-columns: 1fr;
+    }
+
+    #changelist-filter {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    table {
+        font-size: 0.85rem;
+    }
+
+    table thead th,
+    table tbody td {
+        padding: 0.5rem;
+    }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.text-success { color: var(--success-color); }
+.text-danger { color: var(--danger-color); }
+.text-warning { color: var(--warning-color); }
+.text-info { color: var(--info-color); }
+.text-muted { color: var(--text-muted); }
+
+.bg-success { background-color: #d4edda; }
+.bg-danger { background-color: #f8d7da; }
+.bg-warning { background-color: #fff3cd; }
+.bg-info { background-color: #d1ecf1; }

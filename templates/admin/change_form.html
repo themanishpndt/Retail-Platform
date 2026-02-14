@@ -1,0 +1,320 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="fas fa-info-circle"></i> Information</h5>
+        </div>
+        <ul class="sidebar-menu">
+            {% if original %}
+                <li class="menu-header">Actions</li>
+                <li><a href="{% url opts|admin_urlname:'history' original.pk %}" data-icon="history">
+                    <i class="fas fa-history"></i> View History
+                </a></li>
+                {% if has_delete_permission %}
+                    <li><a href="{% url opts|admin_urlname:'delete' original.pk %}" class="text-danger" data-icon="delete">
+                        <i class="fas fa-trash"></i> Delete
+                    </a></li>
+                {% endif %}
+            {% endif %}
+            <li class="menu-header">Status</li>
+            <li style="padding: 1rem;">
+                {% if original %}
+                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Existing Record</span>
+                {% else %}
+                    <span class="badge bg-info"><i class="fas fa-plus-circle"></i> New Record</span>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <div class="header-top">
+                <h1>
+                    <i class="fas fa-edit"></i>
+                    {% if original %}
+                        Edit {{ opts.verbose_name }}
+                    {% else %}
+                        Add {{ opts.verbose_name }}
+                    {% endif %}
+                </h1>
+            </div>
+        </div>
+
+        <form method="post" class="form-container" {% if form_has_file_field %}enctype="multipart/form-data"{% endif %} novalidate>
+            {% csrf_token %}
+
+            {% if errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-exclamation-circle"></i> Errors
+                    </h4>
+                    {% if errors.non_field_errors %}
+                        <ul>
+                            {% for error in errors.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+
+            <div class="form-card">
+                {% block form_top %}{% endblock %}
+
+                {% for fieldset in adminform %}
+                    {% include "admin/includes/fieldset.html" %}
+                {% endfor %}
+
+                {% block form_bottom %}{% endblock %}
+
+                {% if formsets %}
+                    <div class="formsets-section">
+                        <h4><i class="fas fa-list"></i> Related Items</h4>
+                        {% for formset in formsets %}
+                            <div class="formset-card">
+                                {% include "admin/includes/formset.html" %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <div class="submit-row">
+                    <button type="submit" name="_save" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    {% if has_add_permission and not original %}
+                        <button type="submit" name="_addanother" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> Save and Add Another
+                        </button>
+                    {% endif %}
+                    {% if has_change_permission and original %}
+                        <button type="submit" name="_continue" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> Save and Continue
+                        </button>
+                    {% endif %}
+                    <a href="{% url opts|admin_urlname:'changelist' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .form-card {
+        padding: 2rem;
+    }
+
+    .form-actions {
+        background: #fafafa;
+        padding: 1.5rem 2rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .submit-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.6rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success) 0%, #2e7d32 100%);
+        color: white;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
+    }
+
+    .btn-secondary {
+        background: var(--light);
+        color: var(--text-dark);
+        border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: white;
+        border-color: var(--secondary);
+        color: var(--secondary);
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: var(--text-dark);
+        border: 2px solid var(--border);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--light);
+        border-color: var(--secondary);
+        color: var(--secondary);
+    }
+
+    .formsets-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--light);
+    }
+
+    .formsets-section h4 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .formset-card {
+        background: #fafafa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border);
+    }
+
+    .fieldset {
+        background: #fafafa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border);
+    }
+
+    .fieldset legend {
+        background: white;
+        padding: 0 0.75rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .form-container input[type="text"],
+    .form-container input[type="email"],
+    .form-container input[type="number"],
+    .form-container input[type="date"],
+    .form-container input[type="datetime"],
+    .form-container textarea,
+    .form-container select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-container input[type="text"]:focus,
+    .form-container input[type="email"]:focus,
+    .form-container input[type="number"]:focus,
+    .form-container input[type="date"]:focus,
+    .form-container input[type="datetime"]:focus,
+    .form-container textarea:focus,
+    .form-container select:focus {
+        outline: none;
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    }
+
+    .form-container .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-container label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .form-container .help-text {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 0.25rem;
+    }
+
+    .form-container .required::after {
+        content: ' *';
+        color: var(--danger);
+    }
+
+    .alert {
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: none;
+    }
+
+    .alert-heading {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+    }
+
+    .alert-danger {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    .alert-warning {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .alert-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .alert-info {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+</style>
+
+<script src="{% static 'admin/js/admin.js' %}"></script>
+<script>
+    // Auto-focus first form field
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstField = document.querySelector('input[type="text"]:not([type="hidden"]), textarea');
+        if (firstField) {
+            firstField.focus();
+        }
+
+        // Prevent accidental form submission on Enter in text fields
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    document.querySelector('button[name="_save"]').click();
+                }
+            });
+        });
+
+        // Enable form enhancements
+        AdminDashboard.enhanceForm();
+    });
+</script>
+{% endblock %}

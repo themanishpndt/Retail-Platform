@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Movement Report - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="fas fa-arrow-left me-1"></i>Back to Reports
+            </a>
+            <h1 class="h2 mb-0"><i class="fas fa-arrows-alt-v me-2"></i>Stock Movement Report</h1>
+            <p class="text-muted mt-2">Inventory movements in the last 30 days</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Top Moving Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Movement Qty</th>
+                                    <th>Last Movement</th>
+                                    <th>Turnover Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in movements %}
+                                <tr>
+                                    <td><strong>{{ movement.line_items__product__name }}</strong></td>
+                                    <td><code>{{ movement.line_items__product__sku }}</code></td>
+                                    <td><span class="badge bg-info">{{ movement.movement_qty }} units</span></td>
+                                    <td>{{ movement.movement_date|date:"M d, Y" }}</td>
+                                    <td><span class="text-success">Fast</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        No stock movements in the last 30 days
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

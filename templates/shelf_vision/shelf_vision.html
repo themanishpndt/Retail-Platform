@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shelf Vision Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Shelf Vision Analytics</h1>
+            <p class="text-muted">AI-powered shelf monitoring and compliance analysis</p>
+        </div>
+        <div>
+            <button class="btn btn-primary me-2">
+                <i class="fas fa-camera"></i> Live Scan
+            </button>
+            <button class="btn btn-info">
+                <i class="fas fa-sync"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Camera Status -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        Active Cameras
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        {{ camera_status.active }}/{{ camera_status.total_cameras }}
+                    </div>
+                    <small class="text-muted">Last sync: {{ camera_status.last_sync }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        Overall Compliance
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                        {{ compliance_metrics.overall_compliance }}%
+                    </div>
+                    <small class="text-muted">Average across all stores</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Issues Detected
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ issues|length }}</div>
+                    <small class="text-muted">Requiring attention</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                        Shelves Monitored
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ shelves|length }}</div>
+                    <small class="text-muted">Active shelf cameras</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issues Alert -->
+    {% if issues %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">
+                <i class="fas fa-exclamation-circle"></i> Detected Issues
+            </h6>
+        </div>
+        <div class="card-body">
+            {% for issue in issues %}
+            <div class="alert alert-{{ issue.severity }} alert-dismissible fade show mb-2" role="alert">
+                <strong>{{ issue.issue }}</strong> - <em>{{ issue.store }}</em>
+                <br>
+                <small>Action: {{ issue.action }}</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Compliance by Category -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Compliance by Category</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="complianceChart" style="height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Category Compliance Metrics</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th>Compliance Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in compliance_metrics.by_category %}
+                            <tr>
+                                <td>{{ cat.category }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if cat.compliance >= 90 %}bg-success{% elif cat.compliance >= 70 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" style="width: {{ cat.compliance }}%;">
+                                            {{ cat.compliance }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if cat.compliance >= 90 %}
+                                    <span class="badge bg-success">Excellent</span>
+                                    {% elif cat.compliance >= 70 %}
+                                    <span class="badge bg-warning">Good</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Needs Work</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shelf Details -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Shelf Details & Status</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Store</th>
+                        <th>Location</th>
+                        <th>Product</th>
+                        <th>Facing Count</th>
+                        <th>Stock Level</th>
+                        <th>Compliance</th>
+                        <th>Last Scan</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for shelf in shelves %}
+                    <tr>
+                        <td>{{ shelf.store }}</td>
+                        <td>{{ shelf.location }}</td>
+                        <td><strong>{{ shelf.product }}</strong></td>
+                        <td>{{ shelf.facing }}</td>
+                        <td>
+                            {% if shelf.stock_level == 'Excellent' %}
+                            <span class="badge bg-success">{{ shelf.stock_level }}</span>
+                            {% elif shelf.stock_level == 'Good' %}
+                            <span class="badge bg-primary">{{ shelf.stock_level }}</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ shelf.stock_level }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px; width: 100px;">
+                                <div class="progress-bar {% if shelf.compliance >= 90 %}bg-success{% elif shelf.compliance >= 70 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" style="width: {{ shelf.compliance }}%;">
+                                    {{ shelf.compliance }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ shelf.last_scan }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" title="View Image">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" title="Rescan">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" title="Report Issue">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Compliance by category chart
+const complianceCtx = document.getElementById('complianceChart');
+if (complianceCtx) {
+    const categories = {{ compliance_metrics.by_category|safe }};
+    
+    new Chart(complianceCtx, {
+        type: 'bar',
+        data: {
+            labels: categories.map(c => c.category),
+            datasets: [{
+                label: 'Compliance Score (%)',
+                data: categories.map(c => c.compliance),
+                backgroundColor: [
+                    '#198754',
+                    '#0dcaf0',
+                    '#ffc107',
+                    '#fd7e14',
+                    '#198754'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Compliance %'
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

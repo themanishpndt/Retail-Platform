@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Demand Forecasting</h1>
+            <p class="text-muted">AI-powered demand predictions for inventory optimization</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#forecastModal">
+            <i class="fas fa-plus"></i> New Forecast
+        </button>
+    </div>
+
+    <!-- Forecast Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        Forecast Accuracy (MAE)
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">12.5 units</div>
+                    <small class="text-muted">Mean Absolute Error</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        Forecast Confidence
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">87.5%</div>
+                    <small class="text-muted">Average across all products</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                        Models Active
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ products|length }}</div>
+                    <small class="text-muted">Products being forecast</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Model Performance
+                    </div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ forecast_accuracy.mape|floatformat:1 }}%</div>
+                    <small class="text-muted">Mean Absolute % Error</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecast Alerts -->
+    {% if forecast_alerts %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-exclamation-triangle"></i> Forecast Alerts
+            </h6>
+        </div>
+        <div class="card-body">
+            {% for alert in forecast_alerts %}
+            <div class="alert alert-{{ alert.type }} alert-dismissible fade show mb-2" role="alert">
+                <strong>{{ alert.message }}</strong>
+                <br>
+                <small>Action: {{ alert.action }}</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Demand Forecast Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">30-Day Demand Forecast</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="forecastChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Predicted Demand Products -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top Predicted Demand Products</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th>Forecasted Demand (30 days)</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_forecast_products %}
+                            <tr>
+                                <td>
+                                    <strong>{{ product.name }}</strong>
+                                </td>
+                                <td>{{ product.sku }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ product.forecast }}px;" 
+                                             aria-valuenow="{{ product.forecast }}" 
+                                             aria-valuemin="0" aria-valuemax="500">
+                                            {{ product.forecast }} units
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ product.confidence }}%</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" title="Adjust Forecast">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forecast Modal -->
+<div class="modal fade" id="forecastModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Forecast</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="forecastForm">
+                    <div class="mb-3">
+                        <label for="product" class="form-label">Product</label>
+                        <select class="form-select" id="product" required>
+                            <option value="">Select a product...</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }} ({{ product.sku }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="forecastPeriod" class="form-label">Forecast Period (Days)</label>
+                        <input type="number" class="form-control" id="forecastPeriod" value="30" min="7" max="365">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelType" class="form-label">Forecast Model</label>
+                        <select class="form-select" id="modelType">
+                            <option value="arima">ARIMA</option>
+                            <option value="prophet">Facebook Prophet</option>
+                            <option value="lstm">LSTM Neural Network</option>
+                            <option value="ensemble">Ensemble (Recommended)</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeSeasonality" checked>
+                        <label class="form-check-label" for="includeSeasonality">
+                            Include Seasonality
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Generate Forecast</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Forecast data
+const forecastData = {{ forecasts|safe }};
+
+// Create forecast chart
+const forecastCtx = document.getElementById('forecastChart');
+if (forecastCtx) {
+    const labels = forecastData.map(f => f.date);
+    const forecasts = forecastData.map(f => f.forecast);
+    
+    new Chart(forecastCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Forecasted Demand',
+                data: forecasts,
+                borderColor: '#0dcaf0',
+                backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#0dcaf0'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Units'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

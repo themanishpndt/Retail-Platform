@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory Detail - Retail Analytics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'inventory_list' %}">Inventory</a></li>
+                <li class="breadcrumb-item active">{{ inventory.product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ inventory.product.name }} - {{ inventory.store.name }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Product Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>SKU:</th>
+                                <td>{{ inventory.product.sku }}</td>
+                            </tr>
+                            <tr>
+                                <th>Category:</th>
+                                <td>{{ inventory.product.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Cost Price:</th>
+                                <td>${{ inventory.product.cost_price }}</td>
+                            </tr>
+                            <tr>
+                                <th>Selling Price:</th>
+                                <td>${{ inventory.product.selling_price }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Stock Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>Quantity On Hand:</th>
+                                <td><strong>{{ inventory.quantity_on_hand }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Reserved:</th>
+                                <td>{{ inventory.quantity_reserved }}</td>
+                            </tr>
+                            <tr>
+                                <th>Available:</th>
+                                <td><strong>{{ inventory.quantity_available }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Reorder Point:</th>
+                                <td>{{ inventory.product.reorder_point }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'inventory_adjust' %}?item={{ inventory.id }}" class="btn btn-warning w-100 mb-2">
+                    <i class="fas fa-edit me-1"></i>Adjust Stock
+                </a>
+                <a href="{% url 'stock_transfer' %}?item={{ inventory.id }}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-exchange-alt me-1"></i>Transfer Stock
+                </a>
+                <a href="{% url 'product_detail' inventory.product.id %}" class="btn btn-info w-100">
+                    <i class="fas fa-box me-1"></i>View Product
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

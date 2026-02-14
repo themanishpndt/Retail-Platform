@@ -1,0 +1,256 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Retail Analytics Dashboard{% endblock %}
+
+{% block content %}
+                <!-- KPI Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Revenue (30 Days)
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-revenue">$0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Total Orders
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-orders">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Low Stock Items
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="low-stock-count">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Avg Order Value
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="avg-order-value">$0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-chart-bar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Sales Trend (Last 30 Days)</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Top Products</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory & Forecasting Row -->
+                <div class="row mb-4">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Inventory Status</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="inventoryStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Demand Forecast (Next 7 Days)</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="forecastChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts & Insights -->
+                <div class="row">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Active Alerts</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="alerts-list" class="list-group">
+                                    <!-- Alerts will be loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">AI Insights</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="insights-list" class="list-group">
+                                    <!-- Insights will be loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Navigation -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Quick Navigation</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'product_list' %}" class="text-decoration-none">
+                                            <div class="card border-primary">
+                                                <div class="card-body">
+                                                    <i class="fas fa-box fa-3x text-primary mb-2"></i>
+                                                    <h5 class="card-title">Products</h5>
+                                                    <p class="card-text small">Manage product catalog</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'inventory_list' %}" class="text-decoration-none">
+                                            <div class="card border-success">
+                                                <div class="card-body">
+                                                    <i class="fas fa-warehouse fa-3x text-success mb-2"></i>
+                                                    <h5 class="card-title">Inventory</h5>
+                                                    <p class="card-text small">Track stock levels</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'order_list' %}" class="text-decoration-none">
+                                            <div class="card border-info">
+                                                <div class="card-body">
+                                                    <i class="fas fa-shopping-cart fa-3x text-info mb-2"></i>
+                                                    <h5 class="card-title">Orders</h5>
+                                                    <p class="card-text small">View sales orders</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'analytics_dashboard' %}" class="text-decoration-none">
+                                            <div class="card border-warning">
+                                                <div class="card-body">
+                                                    <i class="fas fa-chart-bar fa-3x text-warning mb-2"></i>
+                                                    <h5 class="card-title">Analytics</h5>
+                                                    <p class="card-text small">View reports & insights</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'forecasting' %}" class="text-decoration-none">
+                                            <div class="card border-success">
+                                                <div class="card-body">
+                                                    <i class="fas fa-chart-line fa-3x text-success mb-2"></i>
+                                                    <h5 class="card-title">Forecasting</h5>
+                                                    <p class="card-text small">Demand predictions</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'shelf_vision' %}" class="text-decoration-none">
+                                            <div class="card border-info">
+                                                <div class="card-body">
+                                                    <i class="fas fa-camera fa-3x text-info mb-2"></i>
+                                                    <h5 class="card-title">Shelf Vision</h5>
+                                                    <p class="card-text small">Shelf compliance</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 mb-3">
+                                        <a href="{% url 'alerts' %}" class="text-decoration-none">
+                                            <div class="card border-danger">
+                                                <div class="card-body">
+                                                    <i class="fas fa-bell fa-3x text-danger mb-2"></i>
+                                                    <h5 class="card-title">Alerts</h5>
+                                                    <p class="card-text small">Real-time notifications</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

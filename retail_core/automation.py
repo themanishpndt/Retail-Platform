@@ -1,0 +1,403 @@
+"""
+Business Automation Logic
+Automated decision-making and workflow triggers
+"""
+
+from django.db.models import F, Q, Sum, Avg
+from datetime import datetime, timedelta
+from typing import List, Dict
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class AutoReorderEngine:
+    """Automatic reorder suggestion engine"""
+    
+    @staticmethod
+    def generate_reorder_suggestions() -> List[Dict]:
+        """
+        Generate reorder suggestions based on:
+        - Current stock levels
+        - Reorder points
+        - Demand forecasts
+        - Lead times
+        """
+        from inventory.models import InventoryLevel
+        from analytics.models import DemandForecast
+        from orders.models import PurchaseOrder, POLine
+        
+        suggestions = []
+        
+        # Find items below reorder point
+        low_stock_items = InventoryLevel.objects.filter(
+            quantity_on_hand__lte=F('reorder_point')
+        ).select_related('product', 'store')
+        
+        for item in low_stock_items:
+            # Check if there's already a pending PO
+            pending_po = POLine.objects.filter(
+                product=item.product,
+                purchase_order__store=item.store,
+                purchase_order__status__in=['draft', 'confirmed']
+            ).exists()
+            
+            if pending_po:
+                continue  # Skip if already being reordered
+                
+            # Get demand forecast
+            forecast = DemandForecast.objects.filter(
+                product=item.product,
+                store=item.store,
+                forecast_date__gte=datetime.now().date()
+            ).order_by('forecast_date').first()
+            
+            # Calculate recommended order quantity
+            if forecast:
+                # Safety stock = lead_time * forecasted_demand
+                lead_time_days = item.product.supplier.lead_time_days if item.product.supplier else 7
+                daily_demand = forecast.predicted_demand / 30  # Approximate daily demand
+                safety_stock = lead_time_days * daily_demand
+                
+                recommended_qty = int(item.max_stock_level - item.quantity_on_hand + safety_stock)
+            else:
+                # Fallback: order to max stock level
+                recommended_qty = int(item.max_stock_level - item.quantity_on_hand)
+                
+            if recommended_qty > 0:
+                suggestions.append({
+                    'product_id': item.product.id,
+                    'product_name': item.product.name,
+                    'sku': item.product.sku,
+                    'store_id': item.store.id,
+                    'store_name': item.store.name,
+                    'current_stock': item.quantity_on_hand,
+                    'reorder_point': item.reorder_point,
+                    'recommended_qty': recommended_qty,
+                    'supplier_id': item.product.supplier.id if item.product.supplier else None,
+                    'supplier_name': item.product.supplier.name if item.product.supplier else 'N/A',
+                    'estimated_cost': recommended_qty * item.product.cost_price,
+                    'priority': 'high' if item.quantity_on_hand <= 0 else 'medium',
+                    'reason': 'Below reorder point with forecast data' if forecast else 'Below reorder point'
+                })
+                
+        return suggestions
+        
+    @staticmethod
+    def auto_create_purchase_orders(approve=False) -> List:
+        """
+        Automatically create purchase orders for low stock items
+        
+        Args:
+            approve: If True, automatically approve POs
+        """
+        from orders.models import PurchaseOrder, POLine
+        from inventory.models import Store
+        
+        suggestions = AutoReorderEngine.generate_reorder_suggestions()
+        
+        # Group by supplier and store
+        grouped = {}
+        for suggestion in suggestions:
+            if suggestion['priority'] == 'high':  # Only auto-create for high priority
+                key = (suggestion['supplier_id'], suggestion['store_id'])
+                if key not in grouped:
+                    grouped[key] = []
+                grouped[key].append(suggestion)
+                
+        created_pos = []
+        
+        for (supplier_id, store_id), items in grouped.items():
+            if not supplier_id:
+                continue  # Skip items without supplier
+                
+            from products.models import Supplier
+            supplier = Supplier.objects.get(id=supplier_id)
+            store = Store.objects.get(id=store_id)
+            
+            # Create PO
+            po = PurchaseOrder.objects.create(
+                supplier=supplier,
+                store=store,
+                status='draft' if not approve else 'confirmed',
+                notes='Auto-generated by reorder engine'
+            )
+            
+            total_amount = 0
+            
+            for item in items:
+                from products.models import Product
+                product = Product.objects.get(id=item['product_id'])
+                
+                line_total = item['recommended_qty'] * product.cost_price
+                total_amount += line_total
+                
+                POLine.objects.create(
+                    purchase_order=po,
+                    product=product,
+                    quantity=item['recommended_qty'],
+                    unit_price=product.cost_price,
+                    line_total=line_total
+                )
+                
+            po.total_amount = total_amount
+            po.save()
+            
+            created_pos.append(po)
+            logger.info(f"Auto-created PO {po.po_number} for {supplier.name}")
+            
+        return created_pos
+
+
+class PricingEngine:
+    """Competitive pricing and dynamic pricing logic"""
+    
+    @staticmethod
+    def suggest_competitive_prices() -> List[Dict]:
+        """
+        Suggest price adjustments based on:
+        - Profit margins
+        - Competitor prices (would integrate with web scraping)
+        - Demand elasticity
+        """
+        from products.models import Product
+        
+        suggestions = []
+        
+        # Find products with low margins
+        low_margin_products = Product.objects.filter(
+            profit_margin__lt=15,
+            is_active=True
+        )
+        
+        for product in low_margin_products:
+            # Calculate minimum viable price for 20% margin
+            min_price = product.cost_price * 1.20
+            
+            suggestions.append({
+                'product_id': product.id,
+                'product_name': product.name,
+                'current_price': float(product.selling_price),
+                'current_margin': float(product.profit_margin),
+                'suggested_price': float(min_price),
+                'expected_margin': 20.0,
+                'action': 'increase_price',
+                'reason': 'Low profit margin'
+            })
+            
+        # Find slow-moving products
+        from orders.models import OrderLine
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        
+        slow_products = Product.objects.filter(
+            is_active=True,
+            profit_margin__gte=20
+        ).exclude(
+            orderline__order__order_date__gte=thirty_days_ago
+        ).distinct()
+        
+        for product in slow_products[:20]:  # Limit to 20
+            # Suggest discount to move inventory
+            discounted_price = product.selling_price * 0.9  # 10% discount
+            new_margin = ((discounted_price - product.cost_price) / discounted_price) * 100
+            
+            if new_margin > 10:  # Only if margin remains viable
+                suggestions.append({
+                    'product_id': product.id,
+                    'product_name': product.name,
+                    'current_price': float(product.selling_price),
+                    'current_margin': float(product.profit_margin),
+                    'suggested_price': float(discounted_price),
+                    'expected_margin': float(new_margin),
+                    'action': 'decrease_price',
+                    'reason': 'Slow-moving inventory'
+                })
+                
+        return suggestions
+
+
+class ThresholdAlertEngine:
+    """Threshold-based alert generation"""
+    
+    @staticmethod
+    def check_inventory_thresholds():
+        """Check inventory levels and create alerts"""
+        from inventory.models import InventoryLevel
+        from alerts.models import Alert
+        
+        alerts_created = 0
+        
+        # Low stock alerts
+        low_stock_items = InventoryLevel.objects.filter(
+            quantity_on_hand__lte=F('reorder_point'),
+            quantity_on_hand__gt=0
+        ).select_related('product', 'store')
+        
+        for item in low_stock_items:
+            # Check if alert already exists
+            existing = Alert.objects.filter(
+                alert_type='low_stock',
+                product=item.product,
+                store=item.store,
+                status__in=['active', 'acknowledged']
+            ).exists()
+            
+            if not existing:
+                Alert.objects.create(
+                    alert_type='low_stock',
+                    severity='warning' if item.quantity_on_hand > 0 else 'critical',
+                    product=item.product,
+                    store=item.store,
+                    title=f'Low Stock: {item.product.name}',
+                    message=f'Stock level ({item.quantity_on_hand}) below reorder point ({item.reorder_point})',
+                    status='active'
+                )
+                alerts_created += 1
+                
+        # Out of stock alerts
+        out_of_stock = InventoryLevel.objects.filter(
+            quantity_on_hand__lte=0
+        ).select_related('product', 'store')
+        
+        for item in out_of_stock:
+            existing = Alert.objects.filter(
+                alert_type='out_of_stock',
+                product=item.product,
+                store=item.store,
+                status__in=['active', 'acknowledged']
+            ).exists()
+            
+            if not existing:
+                Alert.objects.create(
+                    alert_type='out_of_stock',
+                    severity='critical',
+                    product=item.product,
+                    store=item.store,
+                    title=f'Out of Stock: {item.product.name}',
+                    message=f'{item.product.name} is out of stock at {item.store.name}',
+                    status='active'
+                )
+                alerts_created += 1
+                
+        # Overstock alerts
+        overstock = InventoryLevel.objects.filter(
+            quantity_on_hand__gt=F('max_stock_level')
+        ).select_related('product', 'store')
+        
+        for item in overstock:
+            existing = Alert.objects.filter(
+                alert_type='overstock',
+                product=item.product,
+                store=item.store,
+                status__in=['active', 'acknowledged']
+            ).exists()
+            
+            if not existing:
+                Alert.objects.create(
+                    alert_type='overstock',
+                    severity='info',
+                    product=item.product,
+                    store=item.store,
+                    title=f'Overstock: {item.product.name}',
+                    message=f'Stock level ({item.quantity_on_hand}) exceeds maximum ({item.max_stock_level})',
+                    status='active'
+                )
+                alerts_created += 1
+                
+        logger.info(f"Created {alerts_created} inventory alerts")
+        return alerts_created
+        
+    @staticmethod
+    def check_forecast_thresholds():
+        """Check demand forecasts and create alerts for high demand"""
+        from analytics.models import DemandForecast
+        from alerts.models import Alert
+        from inventory.models import InventoryLevel
+        
+        alerts_created = 0
+        upcoming_date = datetime.now().date() + timedelta(days=7)
+        
+        # Get high demand forecasts
+        high_demand = DemandForecast.objects.filter(
+            forecast_date__lte=upcoming_date,
+            predicted_demand__gte=100
+        ).select_related('product', 'store')
+        
+        for forecast in high_demand:
+            # Check current inventory
+            try:
+                inventory = InventoryLevel.objects.get(
+                    product=forecast.product,
+                    store=forecast.store
+                )
+                
+                if inventory.quantity_on_hand < forecast.predicted_demand:
+                    existing = Alert.objects.filter(
+                        alert_type='high_demand_forecast',
+                        product=forecast.product,
+                        store=forecast.store,
+                        status__in=['active', 'acknowledged']
+                    ).exists()
+                    
+                    if not existing:
+                        Alert.objects.create(
+                            alert_type='high_demand_forecast',
+                            severity='warning',
+                            product=forecast.product,
+                            store=forecast.store,
+                            title=f'High Demand Forecast: {forecast.product.name}',
+                            message=f'Forecasted demand ({forecast.predicted_demand}) exceeds current stock ({inventory.quantity_on_hand})',
+                            status='active'
+                        )
+                        alerts_created += 1
+                        
+            except InventoryLevel.DoesNotExist:
+                pass
+                
+        logger.info(f"Created {alerts_created} forecast alerts")
+        return alerts_created
+
+
+class ForecastDrivenInventory:
+    """Forecast-driven inventory optimization"""
+    
+    @staticmethod
+    def optimize_stock_levels():
+        """
+        Adjust reorder points and max stock levels based on forecasts
+        """
+        from inventory.models import InventoryLevel
+        from analytics.models import DemandForecast
+        
+        updated_count = 0
+        
+        inventory_items = InventoryLevel.objects.select_related('product', 'store').all()
+        
+        for item in inventory_items:
+            # Get next 30 days forecast
+            thirty_days = datetime.now().date() + timedelta(days=30)
+            
+            forecasts = DemandForecast.objects.filter(
+                product=item.product,
+                store=item.store,
+                forecast_date__lte=thirty_days
+            )
+            
+            if forecasts.exists():
+                avg_forecast = forecasts.aggregate(avg=Avg('predicted_demand'))['avg']
+                
+                # Update reorder point: avg_daily_demand * lead_time * safety_factor
+                lead_time = item.product.supplier.lead_time_days if item.product.supplier else 7
+                safety_factor = 1.5
+                
+                new_reorder_point = int(avg_forecast / 30 * lead_time * safety_factor)
+                new_max_stock = int(avg_forecast * 1.2)  # 20% buffer
+                
+                if new_reorder_point != item.reorder_point or new_max_stock != item.max_stock_level:
+                    item.reorder_point = new_reorder_point
+                    item.max_stock_level = new_max_stock
+                    item.save()
+                    updated_count += 1
+                    
+        logger.info(f"Updated stock levels for {updated_count} items")
+        return updated_count

@@ -1,0 +1,784 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Retail Analytics Platform{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    {% block extra_css %}{% endblock %}
+    <style>
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 400px;
+        max-width: 90vw;
+    }
+    .notification {
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-in;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .notification.success {
+        background-color: #d4edda;
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    .notification.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    .notification.info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+    .notification.warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    .notification-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .notification-close:hover {
+        opacity: 1;
+    }
+
+    /* Navbar Admin Dropdown Styling */
+    .navbar .gap-2 {
+        gap: 10px !important;
+    }
+
+    .navbar .dropdown-toggle {
+        border: 1px solid #dee2e6;
+        padding: 8px 12px !important;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .navbar .dropdown-toggle:hover {
+        background-color: #e9ecef;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    .navbar .dropdown-menu {
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        min-width: 220px;
+    }
+
+    .navbar .dropdown-header {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .navbar .dropdown-item {
+        padding: 0.6rem 1rem;
+        color: #212529;
+        transition: all 0.2s ease;
+        font-size: 14px;
+    }
+
+    .navbar .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #3b82f6;
+        padding-left: 1.2rem;
+    }
+
+    .navbar .dropdown-item i {
+        width: 16px;
+        text-align: center;
+    }
+
+    .navbar .dropdown-item.text-danger:hover {
+        background-color: #ffe5e5;
+        color: #dc3545;
+    }
+
+    .navbar .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .navbar .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
+    }
+
+    .navbar .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .navbar .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+    }
+
+    .navbar .btn-primary {
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .navbar .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+    }
+
+    .navbar .btn-sm {
+        padding: 0.35rem 0.65rem;
+    }
+
+    /* Top Navigation Bar Improvements */
+    .navbar {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar #menu-toggle {
+        border: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .navbar #menu-toggle:hover {
+        background-color: #0d47a1;
+        box-shadow: 0 2px 4px rgba(13, 72, 161, 0.2);
+    }
+
+    .navbar .dropdown {
+        flex-shrink: 0;
+    }
+
+    .navbar .dropdown-toggle {
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 14px;
+    }
+
+    .navbar .dropdown-toggle:hover,
+    .navbar .dropdown-toggle:focus {
+        background-color: #e9ecef;
+        border-color: #0d47a1;
+        box-shadow: 0 2px 4px rgba(13, 72, 161, 0.15);
+    }
+
+    .navbar .btn.btn-info,
+    .navbar .btn.btn-success {
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .navbar .btn.btn-info:hover,
+    .navbar .btn.btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .container-fluid > .ms-auto {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive Navbar */
+    @media (max-width: 768px) {
+        .navbar .gap-2 {
+            flex-direction: column;
+            gap: 8px !important;
+        }
+
+        .navbar .btn-sm {
+            width: 100%;
+            display: block;
+        }
+
+        .navbar .dropdown-toggle {
+            width: 100%;
+        }
+
+        .navbar .dropdown-menu {
+            position: absolute;
+            right: 0;
+            left: auto;
+        }
+    }
+
+    /* Admin Dropdown Icon Animation */
+    .dropdown-toggle::after {
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-toggle[aria-expanded="true"]::after {
+        transform: rotate(180deg);
+    }
+
+    /* Quick Action Button Icons */
+    .navbar .btn i {
+        transition: all 0.3s ease;
+    }
+
+    .navbar .btn:hover i {
+        transform: scale(1.15);
+    }
+
+    /* Fixed Sidebar & Scrollable Content */
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    #wrapper {
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+    }
+
+    #sidebar-wrapper {
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        flex-shrink: 0;
+        z-index: 1000;
+    }
+
+    #page-content-wrapper {
+        flex: 1;
+        margin-left: 250px;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    #page-content-wrapper .navbar {
+        flex-shrink: 0;
+    }
+
+    #page-content-wrapper .container-fluid {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #page-content-wrapper footer {
+        flex-shrink: 0;
+        margin-top: 0;
+    }
+
+    /* Responsive Design - Hide sidebar on mobile */
+    @media (max-width: 768px) {
+        #sidebar-wrapper {
+            width: 0;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        #page-content-wrapper {
+            margin-left: 0;
+        }
+
+        #wrapper.toggled #sidebar-wrapper {
+            transform: translateX(0);
+            width: 250px;
+        }
+
+        #wrapper.toggled #page-content-wrapper {
+            margin-left: 0;
+        }
+    }
+    </style>
+    <script>
+// Notification system
+class Notification {
+    constructor(message, type = 'info', duration = 5000) {
+        this.message = message;
+        this.type = type;
+        this.duration = duration !== undefined ? duration : 5000;
+        this.show();
+    }
+    
+    show() {
+        const container = this.getContainer();
+        const notif = document.createElement('div');
+        notif.className = `notification ${this.type}`;
+        notif.innerHTML = `
+            <div>${this.message}</div>
+            <button class="notification-close" type="button">&times;</button>
+        `;
+        
+        notif.querySelector('.notification-close').addEventListener('click', () => {
+            notif.remove();
+        });
+        
+        container.appendChild(notif);
+        
+        if (this.duration > 0) {
+            setTimeout(() => {
+                if (notif.parentElement) notif.remove();
+            }, this.duration);
+        }
+    }
+    
+    getContainer() {
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+    
+    static clear() {
+        const container = document.getElementById('notification-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
+    
+    static clearProcessing() {
+        const container = document.getElementById('notification-container');
+        if (container) {
+            const processingNotifs = container.querySelectorAll('.notification.info');
+            processingNotifs.forEach(n => n.remove());
+        }
+    }
+    
+    static success(message, duration = 5000) {
+        Notification.clearProcessing();
+        return new Notification(message, 'success', duration);
+    }
+    
+    static error(message, duration = 5000) {
+        Notification.clearProcessing();
+        return new Notification(message, 'error', duration);
+    }
+    
+    static info(message, duration = 0) {
+        return new Notification(message, 'info', duration);
+    }
+    
+    static warning(message, duration = 5000) {
+        return new Notification(message, 'warning', duration);
+    }
+}
+
+// Confirmation dialog
+class ConfirmDialog {
+    constructor(title, message, confirmText = 'Confirm', cancelText = 'Cancel') {
+        this.title = title;
+        this.message = message;
+        this.confirmText = confirmText;
+        this.cancelText = cancelText;
+        this.promise = new Promise((resolve) => {
+            this.resolve = resolve;
+        });
+    }
+    
+    show() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${this.title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${this.message}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${this.cancelText}</button>
+                        <button type="button" class="btn btn-primary confirm-btn">${this.confirmText}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        
+        modal.querySelector('.confirm-btn').addEventListener('click', () => {
+            this.resolve(true);
+            bsModal.hide();
+            modal.remove();
+        });
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            this.resolve(false);
+            modal.remove();
+        });
+        
+        bsModal.show();
+        return this.promise;
+    }
+}
+
+// Prompt dialog
+class PromptDialog {
+    constructor(title, options = []) {
+        this.title = title;
+        this.options = options;
+        this.promise = new Promise((resolve) => {
+            this.resolve = resolve;
+        });
+    }
+    
+    show() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.tabIndex = -1;
+        
+        let optionsHtml = '';
+        if (this.options.length > 0) {
+            optionsHtml = `
+                <div class="mb-3">
+                    <label class="form-label">Select Format:</label>
+                    <select class="form-select prompt-select">
+                        <option value="">-- Choose an option --</option>
+                        ${this.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${this.title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${optionsHtml}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary confirm-btn">OK</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        
+        modal.querySelector('.confirm-btn').addEventListener('click', () => {
+            const selected = modal.querySelector('.prompt-select')?.value || null;
+            this.resolve(selected);
+            bsModal.hide();
+            modal.remove();
+        });
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            this.resolve(null);
+            modal.remove();
+        });
+        
+        bsModal.show();
+        return this.promise;
+    }
+}
+
+function getCSRFToken() {
+    let token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    if (token) return token;
+    token = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (token) return token;
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue || '';
+}
+
+async function handleExportPDF(reportName = 'report') {
+    console.log('🔥 Export button clicked for:', reportName);
+    
+    const dialog = new PromptDialog('Select Export Format', [
+        {label: 'PDF', value: 'pdf'},
+        {label: 'Excel', value: 'excel'},
+        {label: 'CSV', value: 'csv'}
+    ]);
+    
+    const exportFormat = await dialog.show();
+    
+    if (!exportFormat) {
+        console.log('📭 Export cancelled');
+        return;
+    }
+    
+    console.log('📤 Sending export request for format:', exportFormat);
+    Notification.info('Exporting report...');
+    const csrfToken = getCSRFToken();
+    console.log('🔑 CSRF Token length:', csrfToken.length);
+    
+    try {
+        const response = await fetch('/api/reports/export-all/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                format: exportFormat,
+                report_type: reportName,
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        console.log('📨 Response status:', response.status);
+        console.log('📨 Content-Type:', response.headers.get('content-type'));
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const contentDisposition = response.headers.get('content-disposition') || '';
+        let filename = `report.${exportFormat}`;
+        if (contentDisposition && contentDisposition.includes('filename=')) {
+            filename = contentDisposition
+                .split('filename=')[1]
+                .split(';')[0]
+                .replace(/"/g, '')
+                .trim();
+        }
+        
+        console.log('📄 Filename:', filename);
+        
+        const blob = await response.blob();
+        console.log('📦 Blob size:', blob.size, 'bytes');
+        console.log('📦 Blob type:', blob.type);
+        
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+        }, 100);
+        
+        console.log('✅ Export successful! File:', filename);
+        Notification.success(`✅ Downloaded: ${filename}`);
+        
+    } catch (error) {
+        console.error('❌ Export error:', error.message);
+        console.error('❌ Full error:', error);
+        Notification.error(`Export failed: ${error.message}`);
+    }
+}
+    </script>
+</head>
+<body>
+    {% csrf_token %}
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4">
+                <i class="fas fa-chart-line"></i>
+                <h4>Retail Analytics</h4>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-box me-2"></i>Products
+                </a>
+                <a href="{% url 'order_list' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-shopping-cart me-2"></i>Sales
+                </a>
+                <a href="{% url 'inventory_list' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-boxes me-2"></i>Inventory
+                </a>
+                <a href="{% url 'forecasting' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-chart-line me-2"></i>Forecasting
+                </a>
+                <a href="{% url 'shelf_vision' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-camera me-2"></i>Shelf Vision
+                </a>
+                <a href="{% url 'alerts' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-bell me-2"></i>Alerts
+                </a>
+                <a href="{% url 'analytics_dashboard' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-chart-bar me-2"></i>Analytics
+                </a>
+                <a href="{% url 'reports' %}" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-file-alt me-2"></i>Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+                <div class="container-fluid d-flex justify-content-between align-items-center">
+                    <button class="btn btn-primary" id="menu-toggle" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="ms-auto d-flex align-items-center gap-2" style="min-width: auto;">
+                        <!-- Admin Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle fa-lg"></i>
+                                <span>{% if user.is_authenticated %}{{ user.first_name }}{% else %}Account{% endif %}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                {% if user.is_authenticated %}
+                                <li><h6 class="dropdown-header">👤 Account</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'user:profile' %}">
+                                    <i class="fas fa-id-card me-2"></i>My Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'user:dashboard' %}">
+                                    <i class="fas fa-th-large me-2"></i>User Dashboard
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">🔐 Security</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'user:password_change' %}">
+                                    <i class="fas fa-key me-2"></i>Change Password
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'user:password_reset' %}">
+                                    <i class="fas fa-redo me-2"></i>Reset Password
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'user:logout' %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                                {% else %}
+                                <li><a class="dropdown-item" href="{% url 'user:login' %}">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'user:signup' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Sign Up
+                                </a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- Quick Action Buttons -->
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'user:profile' %}" class="btn btn-sm btn-info" title="My Profile">
+                            <i class="fas fa-user me-1"></i>Profile
+                        </a>
+                        <a href="{% url 'user:dashboard' %}" class="btn btn-sm btn-success" title="User Dashboard">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{% url 'user:login' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid p-4">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Page Content Block -->
+                {% block content %}{% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <!-- <footer class="bg-light text-center text-muted py-3 mt-5">
+                <div class="container">
+                    <p class="mb-0">&copy; 2026 Retail Analytics Platform. All rights reserved.</p>
+                </div>
+            </footer> -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const wrapper = document.getElementById('wrapper');
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

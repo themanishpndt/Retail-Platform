@@ -1,0 +1,163 @@
+/* Dashboard Styles */
+
+:root {
+    --primary-color: #4e73df;
+    --success-color: #1cc88a;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --info-color: #36b9cc;
+}
+
+body {
+    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#wrapper {
+    display: flex;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 250px;
+    margin-left: -250px;
+    transition: margin 0.25s ease-out;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 1.5rem;
+    font-size: 1.2rem;
+    background-color: #343a40;
+}
+
+#sidebar-wrapper .list-group-item {
+    border: none;
+    padding: 1rem 1.25rem;
+    transition: all 0.3s;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #495057 !important;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: var(--primary-color) !important;
+}
+
+#page-content-wrapper {
+    min-width: 100vw;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px;
+    }
+}
+
+/* Cards */
+.card {
+    border-radius: 0.75rem;
+    border: none;
+}
+
+.border-left-primary {
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+.border-left-success {
+    border-left: 4px solid var(--success-color) !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+.border-left-info {
+    border-left: 4px solid var(--info-color) !important;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.text-xs {
+    font-size: 0.7rem;
+}
+
+/* Charts */
+canvas {
+    max-height: 300px;
+}
+
+/* Alerts */
+.alert-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+}
+
+.alert-item.critical {
+    border-left-color: var(--danger-color);
+    background-color: #f8d7da;
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning-color);
+    background-color: #fff3cd;
+}
+
+.alert-item.info {
+    border-left-color: var(--info-color);
+    background-color: #d1ecf1;
+}
+
+/* Insights */
+.insight-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: #e7f3ff;
+    border-left: 4px solid var(--primary-color);
+}
+
+.insight-item .badge {
+    font-size: 0.7rem;
+}
+
+/* Loading Spinner */
+.spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body canvas {
+        max-height: 200px;
+    }
+}

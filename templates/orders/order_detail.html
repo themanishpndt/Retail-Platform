@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_id }} - Retail Analytics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'order_list' %}">Orders</a></li>
+                <li class="breadcrumb-item active">Order #{{ order.order_id }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-auto">
+        {% if order.status == 'pending' %}
+        <a href="{% url 'order_confirm' order.id %}" class="btn btn-success">
+            <i class="fas fa-check me-1"></i>Confirm Order
+        </a>
+        {% endif %}
+        <button onclick="window.print()" class="btn btn-secondary">
+            <i class="fas fa-print me-1"></i>Print
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Order Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Order #{{ order.order_id }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Customer Information</h6>
+                        <p class="mb-1"><strong>{{ order.customer.name }}</strong></p>
+                        <p class="mb-1">{{ order.customer.email }}</p>
+                        <p class="mb-1">{{ order.customer.phone }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h6>Order Information</h6>
+                        <p class="mb-1">Date: {{ order.order_date|date:"M d, Y" }}</p>
+                        <p class="mb-1">Status: 
+                            {% if order.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif order.status == 'confirmed' %}
+                            <span class="badge bg-info">Confirmed</span>
+                            {% elif order.status == 'shipped' %}
+                            <span class="badge bg-success">Shipped</span>
+                            {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success">Delivered</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ order.status }}</span>
+                            {% endif %}
+                        </p>
+                        <p class="mb-1">Payment: {{ order.payment_method|default:"N/A" }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Order Items -->
+                <h5>Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in order.line_items.all %}
+                            <tr>
+                                <td>
+                                    <strong>{{ line.product.name }}</strong><br>
+                                    <small class="text-muted">SKU: {{ line.product.sku }}</small>
+                                </td>
+                                <td class="text-center">{{ line.quantity }}</td>
+                                <td class="text-end">${{ line.unit_price }}</td>
+                                <td class="text-end"><strong>${{ line.line_total }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                <td class="text-end">${{ order.subtotal }}</td>
+                            </tr>
+                            {% if order.discount %}
+                            <tr>
+                                <td colspan="3" class="text-end">Discount:</td>
+                                <td class="text-end text-danger">-${{ order.discount }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if order.tax %}
+                            <tr>
+                                <td colspan="3" class="text-end">Tax:</td>
+                                <td class="text-end">${{ order.tax }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-active">
+                                <td colspan="3" class="text-end"><h5 class="mb-0">Total:</h5></td>
+                                <td class="text-end"><h5 class="mb-0">${{ order.total }}</h5></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Order Timeline</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item {% if order.status != 'cancelled' %}active{% endif %}">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h6>Order Placed</h6>
+                            <small>{{ order.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% if order.status != 'pending' and order.status != 'cancelled' %}
+                    <div class="timeline-item active">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h6>Confirmed</h6>
+                            <small>{{ order.updated_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.shipped_at %}
+                    <div class="timeline-item active">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <h6>Shipped</h6>
+                            <small>{{ order.shipped_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.delivered_at %}
+                    <div class="timeline-item active">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h6>Delivered</h6>
+                            <small>{{ order.delivered_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if order.notes %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Notes</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ order.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    opacity: 0.4;
+}
+.timeline-item.active {
+    opacity: 1;
+}
+.timeline-item i {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    color: #6c757d;
+}
+.timeline-item.active i {
+    color: #28a745;
+}
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 20px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: #dee2e6;
+}
+</style>
+{% endblock %}

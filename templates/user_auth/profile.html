@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile - Retail Platform{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #3b82f6;
+        --secondary-color: #1f2937;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --light-bg: #f9fafb;
+        --border-color: #e5e7eb;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-header h1 {
+        color: var(--secondary-color);
+        margin-bottom: 10px;
+        font-size: 28px;
+    }
+
+    .profile-header p {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-card h2 {
+        color: var(--secondary-color);
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--light-bg);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--secondary-color);
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group input:disabled {
+        background-color: var(--light-bg);
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .info-group {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 8px;
+    }
+
+    .info-label {
+        color: #6b7280;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        color: var(--secondary-color);
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 25px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+        background: var(--light-bg);
+        color: var(--secondary-color);
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: white;
+        border-color: var(--primary-color);
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+    }
+
+    .alert-success {
+        background: #ecfdf5;
+        border-color: var(--success-color);
+        color: #065f46;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        border-color: var(--danger-color);
+        color: #7f1d1d;
+    }
+
+    .alert-info {
+        background: #eff6ff;
+        border-color: var(--primary-color);
+        color: #0c4a6e;
+    }
+
+    .error-list {
+        list-style: none;
+        color: #7f1d1d;
+    }
+
+    .error-list li {
+        padding: 5px 0;
+        font-size: 14px;
+    }
+
+    .error-list li:before {
+        content: "• ";
+        margin-right: 8px;
+        font-weight: bold;
+    }
+
+    .divider {
+        height: 1px;
+        background: var(--border-color);
+        margin: 25px 0;
+    }
+
+    .quick-links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .quick-links a {
+        padding: 10px 16px;
+        background: var(--light-bg);
+        color: var(--primary-color);
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .quick-links a:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-header {
+            padding: 20px;
+        }
+
+        .profile-card {
+            padding: 20px;
+        }
+
+        .profile-header h1 {
+            font-size: 22px;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="container">
+    <!-- Header -->
+    <div class="profile-header">
+        <h1>👤 My Profile</h1>
+        <p>Manage your account information and settings</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Error Messages -->
+    {% if form.non_field_errors %}
+        <div class="alert alert-error">
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="profile-content">
+        <!-- Profile Information -->
+        <div class="profile-card">
+            <h2>📋 Profile Information</h2>
+            
+            <form method="post" id="profileForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" value="{{ user.username }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                    {% if form.email.errors %}
+                        <div class="error-list" style="margin-top: 5px;">
+                            {% for error in form.email.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="first_name" value="{{ user.first_name }}" required>
+                    {% if form.first_name.errors %}
+                        <div class="error-list" style="margin-top: 5px;">
+                            {% for error in form.first_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}" required>
+                    {% if form.last_name.errors %}
+                        <div class="error-list" style="margin-top: 5px;">
+                            {% for error in form.last_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        💾 Save Changes
+                    </button>
+                    <a href="{% url 'user:dashboard' %}" class="btn btn-secondary">
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Account Information & Actions -->
+        <div class="profile-card">
+            <h2>🔒 Account & Security</h2>
+
+            <!-- Account Info -->
+            <div class="info-group">
+                <div class="info-label">Account Status</div>
+                <div class="info-value">
+                    {% if user.is_active %}
+                        <span style="color: var(--success-color);">✓ Active</span>
+                    {% else %}
+                        <span style="color: var(--danger-color);">✗ Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Member Since</div>
+                <div class="info-value">{{ user.date_joined|date:"M d, Y" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Last Login</div>
+                <div class="info-value">
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"M d, Y \a\t g:i A" }}
+                    {% else %}
+                        Never logged in
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Quick Actions -->
+            <h3 style="color: var(--secondary-color); margin-bottom: 15px; font-size: 14px; font-weight: 600;">Security Actions</h3>
+            
+            <div class="quick-links">
+                <a href="{% url 'user:password_change' %}">
+                    🔑 Change Password
+                </a>
+                <a href="{% url 'user:password_reset' %}">
+                    ↻ Reset Password
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Section -->
+    <div class="profile-card" style="margin-top: 30px;">
+        <h2>🚪 Logout</h2>
+        <p style="color: #6b7280; margin-bottom: 20px;">
+            Click the button below to log out from your account. You'll need to login again to access your profile.
+        </p>
+        <form method="post" action="{% url 'user:logout' %}" id="logoutForm">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to logout?');">
+                🚪 Logout
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Form submission handling
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const btn = this.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="loading"></span> Saving...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            // Will be submitted normally, but this gives visual feedback
+        }, 0);
+    });
+
+    // Auto-hide messages after 5 seconds
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            alert.style.transition = 'opacity 0.3s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
+    });
+</script>
+{% endblock %}

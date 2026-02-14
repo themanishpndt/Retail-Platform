@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - Retail Analytics{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Analytics Dashboard</h2>
+
+<!-- KPI Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-left-primary shadow">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Revenue (30d)</div>
+                <div class="h5 mb-0 font-weight-bold">${{ total_revenue }}</div>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> {{ revenue_growth }}% vs last month</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-left-success shadow">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Orders</div>
+                <div class="h5 mb-0 font-weight-bold">{{ total_orders }}</div>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> {{ orders_growth }}% vs last month</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-left-info shadow">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg Order Value</div>
+                <div class="h5 mb-0 font-weight-bold">${{ avg_order_value }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-left-warning shadow">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Active Products</div>
+                <div class="h5 mb-0 font-weight-bold">{{ active_products }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Trend (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesTrendChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Top Categories</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoriesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top 10 Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Sales</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.sales_count }}</td>
+                                <td>${{ product.revenue }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Top Customers</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Orders</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in top_customers %}
+                            <tr>
+                                <td>{{ customer.name }}</td>
+                                <td>{{ customer.order_count }}</td>
+                                <td>${{ customer.total_spent }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Health -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Inventory Health</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="inventoryHealthChart" height="60"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sales Trend Chart
+const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: {{ sales_dates|safe }},
+        datasets: [{
+            label: 'Daily Revenue',
+            data: {{ sales_data|safe }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: true }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// Categories Chart
+const catCtx = document.getElementById('categoriesChart').getContext('2d');
+new Chart(catCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_labels|safe }},
+        datasets: [{
+            data: {{ category_data|safe }},
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)'
+            ]
+        }]
+    }
+});
+
+// Inventory Health Chart
+const invCtx = document.getElementById('inventoryHealthChart').getContext('2d');
+new Chart(invCtx, {
+    type: 'bar',
+    data: {
+        labels: ['In Stock', 'Low Stock', 'Out of Stock', 'Overstock'],
+        datasets: [{
+            label: 'Number of Items',
+            data: {{ inventory_health|safe }},
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+{% endblock %}

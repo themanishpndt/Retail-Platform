@@ -1,0 +1,213 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Dashboard - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="fas fa-bars"></i> Navigation</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-header">Core</li>
+            <li><a href="{% url 'admin:products_product_changelist' %}" data-icon="box"><i class="fas fa-boxes"></i> Products</a></li>
+            <li><a href="{% url 'admin:inventory_store_changelist' %}" data-icon="warehouse"><i class="fas fa-warehouse"></i> Inventory</a></li>
+            <li><a href="{% url 'admin:orders_order_changelist' %}" data-icon="receipt"><i class="fas fa-receipt"></i> Orders</a></li>
+            <li><a href="{% url 'admin:orders_customer_changelist' %}" data-icon="people"><i class="fas fa-users"></i> Customers</a></li>
+            
+            <li class="menu-header">Analytics</li>
+            <li><a href="{% url 'admin:analytics_dailysalesmetrics_changelist' %}" data-icon="chart"><i class="fas fa-chart-bar"></i> Sales</a></li>
+            <li><a href="{% url 'admin:analytics_demandforecast_changelist' %}" data-icon="forecast"><i class="fas fa-chart-line"></i> Forecasts</a></li>
+            <li><a href="{% url 'admin:analytics_businessinsights_changelist' %}" data-icon="lightbulb"><i class="fas fa-lightbulb"></i> Insights</a></li>
+            
+            <li class="menu-header">Operations</li>
+            <li><a href="{% url 'admin:alerts_alert_changelist' %}" data-icon="bell"><i class="fas fa-bell"></i> Alerts</a></li>
+            <li><a href="{% url 'admin:ml_services_forecastmodel_changelist' %}" data-icon="brain"><i class="fas fa-brain"></i> ML Models</a></li>
+            <li><a href="{% url 'admin:cv_services_productdetectionmodel_changelist' %}" data-icon="eye"><i class="fas fa-eye"></i> CV Models</a></li>
+            <li><a href="{% url 'admin:data_ingestion_datasource_changelist' %}" data-icon="database"><i class="fas fa-database"></i> Data Sources</a></li>
+            
+            <li class="menu-header">Settings</li>
+            <li><a href="{% url 'admin:auth_user_changelist' %}" data-icon="users"><i class="fas fa-people-cog"></i> Users</a></li>
+            <li><a href="{% url 'admin:auth_group_changelist' %}" data-icon="users"><i class="fas fa-object-group"></i> Groups</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-top">
+                <h1><i class="fas fa-chart-pie"></i> Dashboard</h1>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Platform Status</span>
+                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Operational</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Current User</span>
+                        <span class="badge bg-info">{{ user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Products</h6>
+                    <p class="stat-number">View & Manage</p>
+                </div>
+                <a href="{% url 'admin:products_product_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Inventory</h6>
+                    <p class="stat-number">Stock Levels</p>
+                </div>
+                <a href="{% url 'admin:inventory_store_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Orders</h6>
+                    <p class="stat-number">Track Orders</p>
+                </div>
+                <a href="{% url 'admin:orders_order_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Customers</h6>
+                    <p class="stat-number">Manage Clients</p>
+                </div>
+                <a href="{% url 'admin:orders_customer_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Analytics</h6>
+                    <p class="stat-number">Sales Metrics</p>
+                </div>
+                <a href="{% url 'admin:analytics_dailysalesmetrics_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bg-secondary">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-content">
+                    <h6>Alerts</h6>
+                    <p class="stat-number">System Alerts</p>
+                </div>
+                <a href="{% url 'admin:alerts_alert_changelist' %}" class="stat-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity & System Info -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> System Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr>
+                            <td class="label">Database Status:</td>
+                            <td><span class="badge bg-success">Connected</span></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Static Files:</td>
+                            <td><span class="badge bg-success">Loaded</span></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Cache Status:</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="label">API Status:</td>
+                            <td><span class="badge bg-success">Operational</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="action-list">
+                        <a href="{% url 'admin:products_product_add' %}" class="action-item">
+                            <i class="fas fa-plus"></i> Add New Product
+                        </a>
+                        <a href="{% url 'admin:orders_order_add' %}" class="action-item">
+                            <i class="fas fa-plus"></i> Create Order
+                        </a>
+                        <a href="{% url 'admin:orders_customer_add' %}" class="action-item">
+                            <i class="fas fa-plus"></i> Add Customer
+                        </a>
+                        <a href="{% url 'admin:alerts_alertrule_add' %}" class="action-item">
+                            <i class="fas fa-plus"></i> Create Alert Rule
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Modules -->
+        <div class="modules-section">
+            <h4><i class="fas fa-th"></i> All Available Modules</h4>
+            <div class="modules-grid">
+                {% if app_list %}
+                    {% for app in app_list %}
+                        <div class="module-card">
+                            <h5>{{ app.name }}</h5>
+                            <ul class="module-items">
+                                {% for model in app.models %}
+                                    <li>
+                                        <a href="{{ model.admin_url }}">
+                                            <i class="fas fa-chevron-right"></i> {{ model.name }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'admin/js/admin.js' %}"></script>
+{% endblock %}

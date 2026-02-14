@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Top Customers Report - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="fas fa-arrow-left me-1"></i>Back to Reports
+            </a>
+            <h1 class="h2 mb-0"><i class="fas fa-crown me-2"></i>Top Customers Report</h1>
+            <p class="text-muted mt-2">Top 20 customers by total revenue</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Top Customers Ranking</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Customer Name</th>
+                                    <th>Email</th>
+                                    <th>Purchases</th>
+                                    <th>Total Spent</th>
+                                    <th>Avg Order</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                            <span class="badge bg-warning">1st</span>
+                                        {% elif forloop.counter == 2 %}
+                                            <span class="badge bg-secondary">2nd</span>
+                                        {% elif forloop.counter == 3 %}
+                                            <span class="badge bg-info">3rd</span>
+                                        {% else %}
+                                            {{ forloop.counter }}
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ customer.customer__name }}</strong></td>
+                                    <td>{{ customer.customer__email }}</td>
+                                    <td>{{ customer.purchase_count }}</td>
+                                    <td><span class="badge bg-success">${{ customer.total_spent|floatformat:2 }}</span></td>
+                                    <td>${{ customer.avg_order_value|floatformat:2 }}</td>
+                                    <td>
+                                        {% if customer.total_spent >= vip_threshold %}
+                                            <span class="badge bg-warning">VIP</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Regular</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

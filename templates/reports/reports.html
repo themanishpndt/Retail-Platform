@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports Hub - Retail Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Reports & Analytics Hub
+                    </h1>
+                    <p class="text-muted mt-2">Comprehensive business intelligence and reporting dashboard</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                        <i class="fas fa-filter me-1"></i>Advanced Filters
+                    </button>
+                    <button class="btn btn-outline-primary" id="exportAllBtn">
+                        <i class="fas fa-download me-1"></i>Export All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Total Reports</p>
+                            <h3 class="mb-0">15</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-file-alt fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Last Updated</p>
+                            <h3 class="mb-0" id="last-updated">Just now</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-sync fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Data Period</p>
+                            <h3 class="mb-0">Last 90 Days</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-calendar fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Export Format</p>
+                            <h3 class="mb-0">PDF/Excel</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-download fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Grid -->
+
+    <!-- Sales Reports Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-3 d-flex align-items-center">
+                <span class="bg-primary rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-line text-white"></i>
+                </span>
+                Sales Reports
+            </h3>
+        </div>
+
+        <!-- Daily Sales Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Daily Sales Report</h5>
+                            <p class="text-muted small mb-0">Last 30 days breakdown</p>
+                        </div>
+                        <i class="fas fa-calendar-day text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Daily Revenue Trend</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Order Count Analysis</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Average Order Value</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_daily_sales' %}" class="btn btn-sm btn-primary w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Sales Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Monthly Sales Report</h5>
+                            <p class="text-muted small mb-0">Last 12 months trend</p>
+                        </div>
+                        <i class="fas fa-chart-column text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Monthly Revenue Trend</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Year-over-Year Growth</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Seasonal Analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_monthly_sales' %}" class="btn btn-sm btn-primary w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales by Product Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Sales by Product</h5>
+                            <p class="text-muted small mb-0">Top 20 products</p>
+                        </div>
+                        <i class="fas fa-box text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Revenue per Product</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Units Sold</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Average Pricing</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_sales_by_product' %}" class="btn btn-sm btn-primary w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales by Category Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Sales by Category</h5>
+                            <p class="text-muted small mb-0">Category breakdown</p>
+                        </div>
+                        <i class="fas fa-folder-open text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Category Revenue Mix</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Market Share %</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Growth by Category</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_sales_by_category' %}" class="btn btn-sm btn-primary w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Reports Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-3 d-flex align-items-center">
+                <span class="bg-success rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-warehouse text-white"></i>
+                </span>
+                Inventory Reports
+            </h3>
+        </div>
+
+        <!-- Stock Levels Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Current Stock Levels</h5>
+                            <p class="text-muted small mb-0">All products</p>
+                        </div>
+                        <i class="fas fa-barcode text-success" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Quantity on Hand</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Inventory Value</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Store Location</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_stock_levels' %}" class="btn btn-sm btn-success w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Low Stock Alert</h5>
+                            <p class="text-muted small mb-0">Below reorder point</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Critical Stock Items</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Reorder Points</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Alert Severity</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_low_stock' %}" class="btn btn-sm btn-warning w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Movement Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Stock Movement</h5>
+                            <p class="text-muted small mb-0">Last 30 days</p>
+                        </div>
+                        <i class="fas fa-arrows-alt-v text-success" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Inbound/Outbound</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Turnover Rate</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Fast Moving Items</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_stock_movement' %}" class="btn btn-sm btn-success w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Valuation Report -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Inventory Valuation</h5>
+                            <p class="text-muted small mb-0">By store/location</p>
+                        </div>
+                        <i class="fas fa-money-bill-wave text-success" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Inventory Value</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Cost Basis</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Store Comparison</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_inventory_valuation' %}" class="btn btn-sm btn-success w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Reports Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-3 d-flex align-items-center">
+                <span class="bg-info rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-users text-white"></i>
+                </span>
+                Customer Reports
+            </h3>
+        </div>
+
+        <!-- Customer Purchases Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Customer Purchases</h5>
+                            <p class="text-muted small mb-0">All transactions</p>
+                        </div>
+                        <i class="fas fa-shopping-bag text-info" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Purchase History</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Total Spent</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Last Purchase Date</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_customer_purchases' %}" class="btn btn-sm btn-info w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Customers Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Top Customers</h5>
+                            <p class="text-muted small mb-0">Top 20 by revenue</p>
+                        </div>
+                        <i class="fas fa-crown text-info" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Customer Revenue</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Purchase Frequency</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>VIP Status</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_top_customers' %}" class="btn btn-sm btn-info w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Retention Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Customer Retention</h5>
+                            <p class="text-muted small mb-0">Repeat customers</p>
+                        </div>
+                        <i class="fas fa-handshake text-info" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Retention Rate</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Repeat Customers</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Churn Analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_customer_retention' %}" class="btn btn-sm btn-info w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Reports Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="h4 mb-3 d-flex align-items-center">
+                <span class="bg-danger rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-pie text-white"></i>
+                </span>
+                Performance Reports
+            </h3>
+        </div>
+
+        <!-- Profit Margin Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Profit Margin Analysis</h5>
+                            <p class="text-muted small mb-0">By product/category</p>
+                        </div>
+                        <i class="fas fa-percent text-danger" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Gross Margin %</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Net Profit</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Cost Analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_profit_margin' %}" class="btn btn-sm btn-danger w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplier Performance Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Supplier Performance</h5>
+                            <p class="text-muted small mb-0">Supplier metrics</p>
+                        </div>
+                        <i class="fas fa-truck text-danger" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>On-Time Delivery</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Quality Rating</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Price Compliance</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_supplier_performance' %}" class="btn btn-sm btn-danger w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Accuracy Report -->
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 report-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">Forecast Accuracy</h5>
+                            <p class="text-muted small mb-0">Prediction accuracy</p>
+                        </div>
+                        <i class="fas fa-brain text-danger" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="mt-4">
+                        <p class="small text-muted mb-2">Metrics:</p>
+                        <ul class="list-unstyled small">
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>MAPE (Mean Absolute %)</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>RMSE (Root Mean Squared)</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Model Performance</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <a href="{% url 'report_forecast_accuracy' %}" class="btn btn-sm btn-danger w-100">
+                        View Report <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Report Access</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Report Name</th>
+                                    <th>Category</th>
+                                    <th>Last Accessed</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-chart-line me-2 text-primary"></i>Daily Sales Report</td>
+                                    <td><span class="badge bg-primary">Sales</span></td>
+                                    <td>Today at 10:30 AM</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><a href="{% url 'report_daily_sales' %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-crown me-2 text-info"></i>Top Customers Report</td>
+                                    <td><span class="badge bg-info">Customers</span></td>
+                                    <td>Yesterday at 2:15 PM</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><a href="{% url 'report_top_customers' %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-percent me-2 text-danger"></i>Profit Margin Analysis</td>
+                                    <td><span class="badge bg-danger">Performance</span></td>
+                                    <td>3 days ago at 9:00 AM</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td><a href="{% url 'report_profit_margin' %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Alert</td>
+                                    <td><span class="badge bg-success">Inventory</span></td>
+                                    <td>5 days ago at 3:45 PM</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td><a href="{% url 'report_low_stock' %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Advanced Report Filters</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Date Range</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Report Category</label>
+                    <select class="form-select">
+                        <option>All Categories</option>
+                        <option>Sales Reports</option>
+                        <option>Inventory Reports</option>
+                        <option>Customer Reports</option>
+                        <option>Performance Reports</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select">
+                        <option>PDF</option>
+                        <option>Excel</option>
+                        <option>CSV</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="applyFiltersBtn">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize event handlers when DOM is ready
+async function initializeReportsHandlers() {
+    console.log('🔧 Initializing Reports Hub handlers...');
+    
+    // Export All button
+    const exportBtn = document.getElementById('exportAllBtn');
+    if (exportBtn) {
+        console.log('✅ Export All button found');
+        exportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔥 Export All clicked');
+            handleExportPDF('all');
+        });
+    } else {
+        console.warn('⚠️ Export All button NOT found');
+    }
+    
+    // Apply Filters button
+    const filterBtn = document.getElementById('applyFiltersBtn');
+    if (filterBtn) {
+        console.log('✅ Apply Filters button found');
+        filterBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            console.log('🔥 Apply Filters clicked');
+            
+            const category = document.querySelector('select:nth-of-type(1)')?.value || 'all';
+            const dateInput = document.querySelector('input[type="date"]')?.value;
+            const exportFormat = document.querySelector('select:nth-of-type(2)')?.value || 'pdf';
+            
+            console.log('📋 Filter values:', {category, dateInput, exportFormat});
+            const csrfToken = getCSRFToken();
+            console.log('🔑 CSRF Token length:', csrfToken.length);
+            
+            Notification.info('Applying filters...');
+            
+            try {
+                const response = await fetch('/api/reports/apply-filters/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        category: category,
+                        date_from: dateInput || null,
+                        export_format: exportFormat
+                    })
+                });
+                
+                console.log('📨 Filter response:', response.status);
+                if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+                const data = await response.json();
+                
+                console.log('✅ Filter response:', data);
+                if (data.status === 'success') {
+                    Notification.success(`✅ Filters Applied! Records found: ${data.records_found}`);
+                    // Close modal
+                    try {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('filterModal'));
+                        if (modal) {
+                            modal.hide();
+                            console.log('✅ Modal closed');
+                        }
+                    } catch (e) {
+                        console.log('ℹ️ Modal close:', e.message);
+                    }
+                } else {
+                    Notification.error(`Filter failed: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('❌ Filter error:', error);
+                Notification.error(`Error: ${error.message}`);
+            }
+        });
+    } else {
+        console.warn('⚠️ Apply Filters button NOT found');
+    }
+}
+
+// Run when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeReportsHandlers);
+    console.log('📄 DOMContentLoaded listener attached');
+} else {
+    console.log('📄 DOM already loaded');
+    initializeReportsHandlers();
+}
+</script>
+
+<style>
+    .report-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+    }
+
+    .report-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .report-card .card-footer {
+        padding: 0.75rem;
+    }
+
+    .report-card .btn {
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+

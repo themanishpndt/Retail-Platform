@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete - {{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+
+                    <h4 class="mb-3">Are you sure you want to delete this product?</h4>
+
+                    <div class="product-details bg-light p-3 rounded mb-4">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Product Name:</dt>
+                            <dd class="col-sm-8"><strong>{{ object.name }}</strong></dd>
+
+                            <dt class="col-sm-4">SKU:</dt>
+                            <dd class="col-sm-8">{{ object.sku }}</dd>
+
+                            <dt class="col-sm-4">Category:</dt>
+                            <dd class="col-sm-8">{{ object.category.name }}</dd>
+
+                            <dt class="col-sm-4">Current Price:</dt>
+                            <dd class="col-sm-8">${{ object.selling_price }}</dd>
+
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                {% if object.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+
+                    <p class="text-muted"><small>Related data (orders, inventory) will be affected by this deletion.</small></p>
+
+                    <div class="d-flex gap-2">
+                        <form method="post" class="flex-grow-1">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-trash"></i> Delete Product
+                            </button>
+                        </form>
+                        <a href="{% url 'product_detail' object.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
