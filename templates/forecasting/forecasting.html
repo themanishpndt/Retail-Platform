@@ -11,9 +11,11 @@
             <h1 class="h3 mb-0 text-gray-800">Demand Forecasting</h1>
             <p class="text-muted">AI-powered demand predictions for inventory optimization</p>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#forecastModal">
-            <i class="fas fa-plus"></i> New Forecast
-        </button>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#forecastModal" id="newForecastBtn">
+                <i class="fas fa-plus"></i> New Forecast
+            </button>
+        </div>
     </div>
 
     <!-- Forecast Metrics -->
@@ -204,6 +206,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/forecasting_api.js' %}"></script>
 <script>
 // Forecast data
 const forecastData = {{ forecasts|safe }};

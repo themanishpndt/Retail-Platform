@@ -14,11 +14,12 @@ from .api_views import (
     DashboardAPIView, SalesAPIView, InventoryAPIView, 
     ForecastingAPIView, ShelfVisionAPIView, AlertsAPIView
 )
+from .smtp_api import TestSMTPView, SaveSMTPSettingsView
 from .web_views import (
     ProductListView, ProductDetailView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     InventoryListView, InventoryDetailView,
     OrderListView, OrderDetailView,
-    AnalyticsDashboardView, ReportsView, StubView,
+    AnalyticsDashboardView, ReportsView, StubView, SettingsView, DashboardTestView,
     ForecastingDashboardView, ShelfVisionDashboardView, AlertsDashboardView,
     # Sales Reports
     DailySalesReportView, MonthlySalesReportView, SalesByProductReportView, SalesByCategoryReportView,
@@ -71,7 +72,7 @@ urlpatterns = [
     # Inventory Web Interface
     path('inventory/', InventoryListView.as_view(), name='inventory_list'),
     path('inventory/<int:pk>/', InventoryDetailView.as_view(), name='inventory_detail'),
-    path('inventory/adjust/', StubView.as_view(), name='inventory_adjust'),
+    path('inventory/adjust/', InventoryAdjustView.as_view(), name='inventory_adjust'),
     path('inventory/transfer/', StubView.as_view(), name='stock_transfer'),
     
     # Orders Web Interface
@@ -92,6 +93,12 @@ urlpatterns = [
     
     # Alerts Web Interface
     path('alerts/', AlertsDashboardView.as_view(), name='alerts'),
+    
+    # Settings
+    path('settings/', SettingsView.as_view(), name='settings'),
+    
+    # Dashboard Test
+    path('dashboard-test/', DashboardTestView.as_view(), name='dashboard_test'),
     
     # Stub routes
     path('stub/', StubView.as_view(), name='stub'),
@@ -121,6 +128,10 @@ urlpatterns = [
     # Export & Filter APIs
     path('api/reports/export-all/', ExportAllReportsView.as_view(), name='export_all_reports'),
     path('api/reports/apply-filters/', ApplyFiltersView.as_view(), name='apply_filters'),
+    
+    # SMTP Configuration APIs
+    path('api/test-smtp/', TestSMTPView.as_view(), name='test_smtp'),
+    path('api/save-smtp-settings/', SaveSMTPSettingsView.as_view(), name='save_smtp_settings'),
     
     # Authentication (API)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

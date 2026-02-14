@@ -677,71 +677,339 @@ async function handleExportPDF(reportName = 'report') {
         <!-- Page Content -->
         <div id="page-content-wrapper">
             <!-- Top Navigation -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-                <div class="container-fluid d-flex justify-content-between align-items-center">
-                    <button class="btn btn-primary" id="menu-toggle" title="Toggle Sidebar">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="ms-auto d-flex align-items-center gap-2" style="min-width: auto;">
-                        <!-- Admin Dropdown -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle fa-lg"></i>
-                                <span>{% if user.is_authenticated %}{{ user.first_name }}{% else %}Account{% endif %}</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                                {% if user.is_authenticated %}
-                                <li><h6 class="dropdown-header">👤 Account</h6></li>
-                                <li><a class="dropdown-item" href="{% url 'user:profile' %}">
-                                    <i class="fas fa-id-card me-2"></i>My Profile
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'user:dashboard' %}">
-                                    <i class="fas fa-th-large me-2"></i>User Dashboard
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header">🔐 Security</h6></li>
-                                <li><a class="dropdown-item" href="{% url 'user:password_change' %}">
-                                    <i class="fas fa-key me-2"></i>Change Password
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'user:password_reset' %}">
-                                    <i class="fas fa-redo me-2"></i>Reset Password
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'user:logout' %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </button>
-                                    </form>
-                                </li>
-                                {% else %}
-                                <li><a class="dropdown-item" href="{% url 'user:login' %}">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'user:signup' %}">
-                                    <i class="fas fa-user-plus me-2"></i>Sign Up
-                                </a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+                <div class="container-fluid px-3">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <!-- Left: Menu Toggle -->
+                        <button class="btn btn-primary btn-sm" id="menu-toggle" title="Toggle Sidebar">
+                            <i class="fas fa-bars"></i>
+                        </button>
 
-                        <!-- Quick Action Buttons -->
+                        <!-- Center: Branding (optional - can add logo/title here) -->
+                        
+                        <!-- Right: User Menu -->
                         {% if user.is_authenticated %}
-                        <a href="{% url 'user:profile' %}" class="btn btn-sm btn-info" title="My Profile">
-                            <i class="fas fa-user me-1"></i>Profile
-                        </a>
-                        <a href="{% url 'user:dashboard' %}" class="btn btn-sm btn-success" title="User Dashboard">
-                            <i class="fas fa-home me-1"></i>Dashboard
-                        </a>
-                        {% else %}
-                        <a href="{% url 'user:login' %}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                        </a>
-                        {% endif %}
+                            <!-- User Menu - Always Visible -->
+                            <div class="user-menu-container">
+                                <div class="user-profile-badge d-flex align-items-center gap-2">
+                                    <i class="fas fa-user-circle fa-lg text-primary"></i>
+                                    <span class="d-none d-md-inline text-dark" style="font-weight: 500;">{{ user.first_name|default:"Account" }}</span>
+                                </div>
+                                <nav class="user-menu-nav">
+                                    <!-- Account Section -->
+                                    <div class="menu-section">
+                                        <a href="{% url 'user:profile' %}" class="menu-item">
+                                            <i class="fas fa-id-card text-primary"></i>
+                                            <span>My Profile</span>
+                                        </a>
+                                        <a href="{% url 'user:dashboard' %}" class="menu-item">
+                                            <i class="fas fa-th-large text-success"></i>
+                                            <span>Dashboard</span>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Security Section -->
+                                    <div class="menu-section">
+                                        <a href="{% url 'user:password_change' %}" class="menu-item">
+                                            <i class="fas fa-key text-warning"></i>
+                                            <span>Change Password</span>
+                                        </a>
+                                    </div>
+
+                                    <!-- Logout Section -->
+                                    <div class="menu-section">
+                                        <form method="post" action="{% url 'user:logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="menu-item menu-item-logout">
+                                                <i class="fas fa-sign-out-alt text-danger"></i>
+                                                <span>Logout</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </nav>
+                            </div>
+                            {% else %}
+                            <!-- Auth Menu - Always Visible -->
+                            <div class="user-menu-container">
+                                <div class="user-profile-badge d-flex align-items-center gap-2">
+                                    <i class="fas fa-user-circle fa-lg text-primary"></i>
+                                    <span class="d-none d-md-inline text-dark" style="font-weight: 500;">Account</span>
+                                </div>
+                                <nav class="user-menu-nav">
+                                    <div class="menu-section">
+                                        <a href="{% url 'user:login' %}" class="menu-item">
+                                            <i class="fas fa-sign-in-alt text-primary"></i>
+                                            <span>Login</span>
+                                        </a>
+                                        <a href="{% url 'user:signup' %}" class="menu-item">
+                                            <i class="fas fa-user-plus text-success"></i>
+                                            <span>Sign Up</span>
+                                        </a>
+                                    </div>
+                                </nav>
+                            </div>
+                            {% endif %}
                     </div>
                 </div>
             </nav>
+
+            <style>
+                .navbar {
+                    transition: all 0.3s ease;
+                }
+
+                .navbar .btn-outline-primary,
+                .navbar .btn-outline-success {
+                    font-size: 13px;
+                    font-weight: 500;
+                    border-radius: 6px;
+                    padding: 8px 12px;
+                    transition: all 0.2s ease;
+                }
+
+                .navbar .btn-outline-primary:hover {
+                    background-color: #0d47a1;
+                    border-color: #0d47a1;
+                    color: white;
+                }
+
+                .navbar .btn-outline-success:hover {
+                    background-color: #10b981;
+                    border-color: #10b981;
+                    color: white;
+                }
+
+                .navbar .btn-light {
+                    border-radius: 6px;
+                    font-weight: 500;
+                    padding: 8px 12px;
+                    transition: all 0.2s ease;
+                    background-color: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                }
+
+                .navbar .btn-light:hover {
+                    background-color: #e9ecef;
+                    border-color: #adb5bd;
+                }
+
+                /* User Menu Styles */
+                .user-menu-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 8px 15px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    border: 1px solid #dee2e6;
+                }
+
+                .user-profile-badge {
+                    padding-right: 15px;
+                    border-right: 1px solid #dee2e6;
+                    min-width: fit-content;
+                    cursor: pointer;
+                }
+
+                .user-menu-nav {
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                }
+
+                .menu-section {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 0 10px;
+                    border-right: 1px solid #dee2e6;
+                }
+
+                .menu-section:last-child {
+                    border-right: none;
+                    padding-right: 0;
+                }
+
+                .menu-section-title {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #6c757d;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-right: 8px;
+                    white-space: nowrap;
+                }
+
+                .menu-item {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 12px;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: #212529;
+                    text-decoration: none;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 5px;
+                    transition: all 0.2s ease;
+                    white-space: nowrap;
+                }
+
+                .menu-item:hover {
+                    background-color: #0d47a1;
+                    color: white;
+                    border-color: #0d47a1;
+                    transform: translateY(-2px);
+                    box-shadow: 0 2px 8px rgba(13, 71, 161, 0.15);
+                }
+
+                .menu-item i {
+                    font-size: 14px;
+                }
+
+                .menu-item-logout {
+                    background: white;
+                    border: 1px solid #fee2e2;
+                }
+
+                .menu-item-logout:hover {
+                    background-color: #ef4444;
+                    border-color: #ef4444;
+                    color: white;
+                }
+
+                .dropdown-menu {
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                }
+
+                .dropdown-header {
+                    font-weight: 600;
+                    color: #212529;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .dropdown-item {
+                    padding: 10px 16px;
+                    font-size: 13px;
+                    transition: all 0.2s ease;
+                }
+
+                .dropdown-item:hover {
+                    background-color: #f8f9fa;
+                    padding-left: 18px;
+                }
+
+                .dropdown-item i {
+                    min-width: 18px;
+                }
+
+                @media (max-width: 1024px) {
+                    .user-menu-container {
+                        flex-direction: column;
+                        gap: 10px;
+                        padding: 10px;
+                    }
+
+                    .user-profile-badge {
+                        padding-right: 0;
+                        border-right: none;
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    .user-menu-nav {
+                        flex-direction: column;
+                        width: 100%;
+                        gap: 8px;
+                    }
+
+                    .menu-section {
+                        flex-direction: column;
+                        width: 100%;
+                        padding: 10px 0;
+                        border-right: none;
+                        border-bottom: 1px solid #dee2e6;
+                    }
+
+                    .menu-section:last-child {
+                        border-bottom: none;
+                    }
+
+                    .menu-section-title {
+                        width: 100%;
+                        margin-right: 0;
+                        margin-bottom: 8px;
+                    }
+
+                    .menu-item {
+                        width: 100%;
+                        justify-content: flex-start;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .navbar .d-sm-inline {
+                        display: none !important;
+                    }
+
+                    .navbar .d-none.d-sm-block {
+                        display: none !important;
+                    }
+
+                    .navbar .btn-sm {
+                        padding: 6px 10px;
+                        font-size: 12px;
+                    }
+
+                    .navbar .gap-3 {
+                        gap: 1rem !important;
+                    }
+
+                    .user-menu-container {
+                        flex-direction: column;
+                        gap: 10px;
+                        padding: 10px;
+                    }
+
+                    .menu-item {
+                        font-size: 12px;
+                        padding: 7px 10px;
+                    }
+
+                    .menu-section-title {
+                        font-size: 10px;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    .user-menu-container {
+                        min-width: 100%;
+                        gap: 8px;
+                    }
+
+                    .user-menu-nav {
+                        width: 100%;
+                    }
+
+                    .menu-item {
+                        font-size: 11px;
+                        padding: 6px 8px;
+                    }
+
+                    .menu-item span {
+                        display: none;
+                    }
+
+                    .menu-item i {
+                        font-size: 13px;
+                    }
+                }
+            </style>
 
             <!-- Main Content -->
             <div class="container-fluid p-4">

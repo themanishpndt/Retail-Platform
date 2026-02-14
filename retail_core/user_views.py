@@ -13,7 +13,22 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django import forms
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.db.models import Sum, Count, Avg, Q
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+
+# Import models for dashboard
+from orders.models import Order, OrderLine
+from products.models import Product
+from inventory.models import InventoryLevel, Store
+from analytics.models import DailySalesMetrics, ProductSalesAnalytics
+from alerts.models import Alert
+from ml_services.models import ForecastModel
+
+# Import OTP model
+from retail_core.models import PasswordResetOTP
 
 logger = logging.getLogger(__name__)
 
@@ -312,16 +327,95 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
 # ============================================================
 
 class UserDashboardView(View):
-    """User dashboard view"""
+    """User dashboard view with analytics and business metrics"""
     
     def get(self, request):
         if not request.user.is_authenticated:
             return redirect('user:login')
         
+        # Calculate 30-day range
+        today = timezone.now().date()
+        thirty_days_ago = today - timedelta(days=30)
+        
+        # Get all orders from last 30 days
+        orders_30days = Order.objects.filter(
+            order_date__gte=timezone.make_aware(datetime.combine(thirty_days_ago, datetime.min.time()))
+        )
+        
+        # 1. Revenue (30 Days)
+        total_revenue = orders_30days.aggregate(Sum('total'))['total__sum'] or 0
+        
+        # 2. Total Orders
+        total_orders = orders_30days.count()
+        
+        # 3. Average Order Value
+        avg_order_value = orders_30days.aggregate(Avg('total'))['total__avg'] or 0
+        
+        # 4. Low Stock Items (quantity < 10)
+        low_stock_items = InventoryLevel.objects.filter(
+            quantity_on_hand__lt=10
+        ).select_related('product', 'store').count()
+        
+        # 5. Top 5 Products (by quantity sold in last 30 days)
+        top_products = OrderLine.objects.filter(
+            order__order_date__gte=timezone.make_aware(datetime.combine(thirty_days_ago, datetime.min.time()))
+        ).values('product__name', 'product__sku').annotate(
+            total_sold=Sum('quantity'),
+            total_revenue=Sum('line_total')
+        ).order_by('-total_sold')[:5]
+        
+        # 6. Sales Trend (Daily sales for last 30 days)
+        sales_trend = []
+        for i in range(30):
+            date = today - timedelta(days=i)
+            daily_orders = Order.objects.filter(
+                order_date__date=date
+            )
+            daily_revenue = daily_orders.aggregate(Sum('total'))['total__sum'] or 0
+            sales_trend.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'revenue': float(daily_revenue),
+                'orders': daily_orders.count()
+            })
+        sales_trend.reverse()  # Reverse to start from oldest
+        
+        # 7. Inventory Status by Store (total items per store)
+        inventory_by_store = InventoryLevel.objects.values('store__name').annotate(
+            total_quantity=Sum('quantity_on_hand'),
+            store_id=Sum('store__id')
+        )
+        
+        # 8. Active Alerts (excluding resolved/closed)
+        active_alerts = Alert.objects.filter(
+            status__in=['ACTIVE', 'ACKNOWLEDGED']
+        ).select_related('store', 'inventory_level__product').order_by('-triggered_at')[:10]
+        
+        # 9. Forecast data (next 7 days)
+        forecast_data = []
+        for i in range(7):
+            date = today + timedelta(days=i)
+            forecast_data.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'forecasted_demand': 100 + (i * 15)  # Placeholder data
+            })
+        
         context = {
             'user': request.user,
             'registered_date': request.user.date_joined,
             'last_login': request.user.last_login,
+            # KPI Metrics
+            'total_revenue': f"${total_revenue:,.2f}",
+            'total_revenue_raw': float(total_revenue),
+            'total_orders': total_orders,
+            'low_stock_items': low_stock_items,
+            'avg_order_value': f"${avg_order_value:,.2f}",
+            'avg_order_value_raw': float(avg_order_value),
+            # Charts and detailed data
+            'top_products': list(top_products),
+            'sales_trend': sales_trend,
+            'inventory_by_store': list(inventory_by_store),
+            'forecast_data': forecast_data,
+            'active_alerts': active_alerts,
         }
         
         return render(request, 'dashboard.html', context)
@@ -386,3 +480,176 @@ class HomeView(View):
             return redirect('user:dashboard')
         else:
             return render(request, 'user_auth/home.html')
+
+
+# ============================================================
+# PASSWORD RESET WITH OTP
+# ============================================================
+
+class PasswordResetRequestView(View):
+    """Request password reset - send OTP to email"""
+    
+    def get(self, request):
+        return render(request, 'user_auth/password_reset_request.html')
+    
+    def post(self, request):
+        email = request.POST.get('email', '').strip()
+        
+        if not email:
+            messages.error(request, 'Please enter your email address.')
+            return render(request, 'user_auth/password_reset_request.html')
+        
+        try:
+            # Check if user exists
+            user = User.objects.get(email=email)
+            
+            # Generate and save OTP
+            otp_obj = PasswordResetOTP.create_otp(email=email, user=user)
+            
+            # Send OTP via email
+            subject = 'Password Reset OTP - Retail Platform'
+            message = f"""
+Hello {user.first_name or 'User'},
+
+Your password reset OTP is: {otp_obj.otp}
+
+This OTP will expire in 10 minutes.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+Retail Platform Team
+            """
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'OTP sent to your email. Please check your inbox.')
+                return redirect('user:password_reset_verify', email=email)
+            except Exception as e:
+                logger.error(f"Failed to send OTP email: {str(e)}")
+                messages.error(request, 'Failed to send OTP. Please try again later.')
+                return render(request, 'user_auth/password_reset_request.html')
+                
+        except User.DoesNotExist:
+            # For security, don't reveal if email exists
+            messages.info(request, 'If an account exists with this email, an OTP has been sent.')
+            return render(request, 'user_auth/password_reset_request.html')
+        except Exception as e:
+            logger.error(f"Password reset error: {str(e)}")
+            messages.error(request, 'An error occurred. Please try again.')
+            return render(request, 'user_auth/password_reset_request.html')
+
+
+class PasswordResetVerifyOTPView(View):
+    """Verify OTP for password reset"""
+    
+    def get(self, request, email=None):
+        email = email or request.GET.get('email', '')
+        context = {'email': email}
+        return render(request, 'user_auth/password_reset_verify_otp.html', context)
+    
+    def post(self, request):
+        email = request.POST.get('email', '').strip()
+        otp_code = request.POST.get('otp', '').strip()
+        
+        if not email or not otp_code:
+            messages.error(request, 'Email and OTP are required.')
+            return render(request, 'user_auth/password_reset_verify_otp.html', {'email': email})
+        
+        # Verify OTP
+        otp_obj = PasswordResetOTP.verify_otp(email, otp_code)
+        
+        if otp_obj:
+            # Mark OTP as used
+            otp_obj.is_used = True
+            otp_obj.save()
+            
+            # Redirect to password reset form
+            messages.success(request, 'OTP verified successfully. Please set your new password.')
+            return redirect('user:password_reset_set_new', email=email, otp=otp_code)
+        else:
+            # Increment attempts
+            try:
+                failed_otp = PasswordResetOTP.objects.filter(
+                    email=email,
+                    is_used=False,
+                    expires_at__gt=timezone.now()
+                ).first()
+                
+                if failed_otp:
+                    failed_otp.attempts += 1
+                    failed_otp.save()
+                    
+                    if failed_otp.attempts >= 3:
+                        messages.error(request, 'Too many failed attempts. Please request a new OTP.')
+                        return redirect('user:password_reset_request')
+            except:
+                pass
+            
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return render(request, 'user_auth/password_reset_verify_otp.html', {'email': email})
+
+
+class PasswordResetSetNewView(View):
+    """Set new password after OTP verification"""
+    
+    def get(self, request, email=None, otp=None):
+        email = email or request.GET.get('email', '')
+        otp = otp or request.GET.get('otp', '')
+        
+        # Verify OTP is still valid
+        if not PasswordResetOTP.objects.filter(email=email, otp=otp, is_used=True).exists():
+            messages.error(request, 'Invalid or expired OTP.')
+            return redirect('user:password_reset_request')
+        
+        context = {'email': email, 'otp': otp}
+        return render(request, 'user_auth/password_reset_set_new.html', context)
+    
+    def post(self, request):
+        email = request.POST.get('email', '').strip()
+        otp = request.POST.get('otp', '').strip()
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        
+        if not email or not otp:
+            messages.error(request, 'Invalid request.')
+            return redirect('user:password_reset_request')
+        
+        # Verify passwords match
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            context = {'email': email, 'otp': otp}
+            return render(request, 'user_auth/password_reset_set_new.html', context)
+        
+        # Verify password strength
+        if len(new_password) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            context = {'email': email, 'otp': otp}
+            return render(request, 'user_auth/password_reset_set_new.html', context)
+        
+        # Verify OTP was used
+        if not PasswordResetOTP.objects.filter(email=email, otp=otp, is_used=True).exists():
+            messages.error(request, 'Invalid or expired OTP.')
+            return redirect('user:password_reset_request')
+        
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            
+            messages.success(request, 'Your password has been reset successfully. Please log in.')
+            return redirect('user:login')
+        except User.DoesNotExist:
+            messages.error(request, 'User not found.')
+            return redirect('user:password_reset_request')
+        except Exception as e:
+            logger.error(f"Password reset error: {str(e)}")
+            messages.error(request, 'An error occurred. Please try again.')
+            context = {'email': email, 'otp': otp}
+            return render(request, 'user_auth/password_reset_set_new.html', context)

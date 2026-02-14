@@ -19,6 +19,9 @@ from .user_views import (
     UserPasswordResetDoneView,
     UserDashboardView,
     UserProfileView,
+    PasswordResetRequestView,
+    PasswordResetVerifyOTPView,
+    PasswordResetSetNewView,
 )
 
 app_name = 'user'
@@ -39,6 +42,13 @@ urlpatterns = [
     # Password Management URLs
     path('account/password/change/', UserPasswordChangeView.as_view(), name='password_change'),
     path('account/password/change/done/', UserPasswordChangeDoneView.as_view(), name='password_change_done'),
+    
+    # OTP-based Password Reset URLs
+    path('password/reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('password/reset/verify/<email>/', PasswordResetVerifyOTPView.as_view(), name='password_reset_verify'),
+    path('password/reset/set-new/<email>/<otp>/', PasswordResetSetNewView.as_view(), name='password_reset_set_new'),
+    
+    # Legacy password reset URLs (kept for backward compatibility)
     path('account/password/reset/', UserPasswordResetView.as_view(), name='password_reset'),
     path('account/password/reset/done/', UserPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('account/password/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(

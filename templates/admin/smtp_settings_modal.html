@@ -1,0 +1,278 @@
+{% load static %}
+<div class="modal fade" id="smtpSettingsModal" tabindex="-1" aria-labelledby="smtpSettingsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); color: white;">
+        <h5 class="modal-title" id="smtpSettingsLabel">
+          <i class="fas fa-envelope-open-text me-2"></i>SMTP Email Configuration
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="smtpSettingsForm">
+          {% csrf_token %}
+          
+          <!-- Email Backend -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">Email Backend</label>
+            <div class="col-sm-8">
+              <select class="form-select" id="emailBackend" name="email_backend" required>
+                <option value="django.core.mail.backends.console.EmailBackend">Console (Development Only)</option>
+                <option value="django.core.mail.backends.smtp.EmailBackend">SMTP (Production)</option>
+              </select>
+              <small class="text-muted">Select console for development (emails shown in terminal) or SMTP for production</small>
+            </div>
+          </div>
+
+          <!-- SMTP Host -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">SMTP Host</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="emailHost" name="email_host" placeholder="smtp.gmail.com" value="smtp.gmail.com">
+              <small class="text-muted">Gmail: smtp.gmail.com | Outlook: smtp-mail.outlook.com</small>
+            </div>
+          </div>
+
+          <!-- SMTP Port -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">SMTP Port</label>
+            <div class="col-sm-8">
+              <input type="number" class="form-control" id="emailPort" name="email_port" placeholder="587" value="587">
+              <small class="text-muted">Gmail/Outlook: 587 | Alternative: 465</small>
+            </div>
+          </div>
+
+          <!-- Use TLS -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">Use TLS</label>
+            <div class="col-sm-8">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="emailUseTls" name="email_use_tls" checked>
+                <label class="form-check-label" for="emailUseTls">Enable TLS encryption</label>
+              </div>
+              <small class="text-muted">Required for Gmail and most secure SMTP servers</small>
+            </div>
+          </div>
+
+          <!-- From Email Address -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">From Email</label>
+            <div class="col-sm-8">
+              <input type="email" class="form-control" id="defaultFromEmail" name="default_from_email" placeholder="noreply@retailplatform.com" value="mpandat0052@gmail.com" required>
+              <small class="text-muted">Email address OTP will be sent from</small>
+            </div>
+          </div>
+
+          <!-- Email Host User -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">Email Address</label>
+            <div class="col-sm-8">
+              <input type="email" class="form-control" id="emailHostUser" name="email_host_user" placeholder="your-email@gmail.com" value="mpandat0052@gmail.com" required>
+              <small class="text-muted">Gmail account for SMTP authentication</small>
+            </div>
+          </div>
+
+          <!-- Email Host Password -->
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label fw-600">App Password</label>
+            <div class="col-sm-8">
+              <div class="input-group">
+                <input type="password" class="form-control" id="emailHostPassword" name="email_host_password" placeholder="16-character app password">
+                <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" onclick="togglePasswordField()">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <small class="text-muted">
+                <strong>Gmail:</strong> Use <a href="https://myaccount.google.com/apppasswords" target="_blank">App Passwords</a> (16 chars)
+              </small>
+            </div>
+          </div>
+
+          <!-- Test Connection -->
+          <div class="row mb-3">
+            <div class="col-sm-8 offset-sm-4">
+              <button type="button" class="btn btn-outline-primary me-2" id="testConnectionBtn" onclick="testSmtpConnection()">
+                <i class="fas fa-plug me-2"></i>Test Connection
+              </button>
+              <small class="text-muted d-block mt-2">
+                <strong>Gmail Setup Instructions:</strong><br>
+                1. Enable 2-Factor Authentication<br>
+                2. Visit <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a><br>
+                3. Select "Mail" and "Windows Computer"<br>
+                4. Copy the 16-character password and paste above
+              </small>
+            </div>
+          </div>
+
+          <!-- Alert Messages -->
+          <div id="testResultAlert" style="display: none;" class="alert mt-3" role="alert"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveSMTPBtn" onclick="saveSMTPSettings()">
+          <i class="fas fa-save me-2"></i>Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .fw-600 {
+    font-weight: 600;
+    color: #0d47a1;
+  }
+
+  #smtpSettingsForm .form-control,
+  #smtpSettingsForm .form-select {
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+  }
+
+  #smtpSettingsForm .form-control:focus,
+  #smtpSettingsForm .form-select:focus {
+    border-color: #0d47a1;
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+  }
+
+  .modal-header {
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  small a {
+    color: #0d47a1;
+    text-decoration: underline;
+  }
+
+  small a:hover {
+    color: #1565c0;
+  }
+
+  .input-group .btn {
+    border: 2px solid #e0e0e0;
+  }
+
+  .input-group .btn:hover {
+    border-color: #0d47a1;
+    color: #0d47a1;
+  }
+
+  .alert-success {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #2e7d32;
+  }
+
+  .alert-danger {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #c62828;
+  }
+
+  .alert-warning {
+    background-color: #fff3e0;
+    border-color: #ff9800;
+    color: #e65100;
+  }
+</style>
+
+<script>
+  function togglePasswordField() {
+    const field = document.getElementById('emailHostPassword');
+    const btn = document.getElementById('togglePasswordBtn');
+    
+    if (field.type === 'password') {
+      field.type = 'text';
+      btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+    } else {
+      field.type = 'password';
+      btn.innerHTML = '<i class="fas fa-eye"></i>';
+    }
+  }
+
+  function testSmtpConnection() {
+    const btn = document.getElementById('testConnectionBtn');
+    const alert = document.getElementById('testResultAlert');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+    
+    const formData = new FormData(document.getElementById('smtpSettingsForm'));
+    
+    fetch('/api/test-smtp/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert.style.display = 'block';
+      if (data.success) {
+        alert.className = 'alert alert-success';
+        alert.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+      } else {
+        alert.className = 'alert alert-danger';
+        alert.innerHTML = '<i class="fas fa-times-circle me-2"></i>' + data.message;
+      }
+      
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
+    })
+    .catch(error => {
+      alert.style.display = 'block';
+      alert.className = 'alert alert-danger';
+      alert.innerHTML = '<i class="fas fa-times-circle me-2"></i>Error: ' + error.message;
+      
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
+    });
+  }
+
+  function saveSMTPSettings() {
+    const btn = document.getElementById('saveSMTPBtn');
+    const alert = document.getElementById('testResultAlert');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+    
+    const formData = new FormData(document.getElementById('smtpSettingsForm'));
+    
+    fetch('/api/save-smtp-settings/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert.style.display = 'block';
+      if (data.success) {
+        alert.className = 'alert alert-success';
+        alert.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+        
+        setTimeout(() => {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('smtpSettingsModal'));
+          modal.hide();
+        }, 2000);
+      } else {
+        alert.className = 'alert alert-danger';
+        alert.innerHTML = '<i class="fas fa-times-circle me-2"></i>' + data.message;
+      }
+      
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-2"></i>Save Settings';
+    })
+    .catch(error => {
+      alert.style.display = 'block';
+      alert.className = 'alert alert-danger';
+      alert.innerHTML = '<i class="fas fa-times-circle me-2"></i>Error: ' + error.message;
+      
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-2"></i>Save Settings';
+    });
+  }
+</script>

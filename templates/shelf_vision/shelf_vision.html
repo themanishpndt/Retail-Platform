@@ -12,10 +12,10 @@
             <p class="text-muted">AI-powered shelf monitoring and compliance analysis</p>
         </div>
         <div>
-            <button class="btn btn-primary me-2">
+            <button class="btn btn-primary me-2" data-action="live-scan" id="liveScanBtn">
                 <i class="fas fa-camera"></i> Live Scan
             </button>
-            <button class="btn btn-info">
+            <button class="btn btn-info" data-action="refresh-data" id="refreshDataBtn">
                 <i class="fas fa-sync"></i> Refresh Data
             </button>
         </div>
@@ -195,13 +195,13 @@
                         </td>
                         <td>{{ shelf.last_scan }}</td>
                         <td>
-                            <button class="btn btn-sm btn-info" title="View Image">
+                            <button class="btn btn-sm btn-info" data-action="view-image" data-shelf-id="{{ shelf.id }}" title="View Image">
                                 <i class="fas fa-image"></i>
                             </button>
-                            <button class="btn btn-sm btn-warning" title="Rescan">
+                            <button class="btn btn-sm btn-warning" data-action="rescan" data-shelf-id="{{ shelf.id }}" title="Rescan">
                                 <i class="fas fa-sync"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger" title="Report Issue">
+                            <button class="btn btn-sm btn-danger" data-action="report-issue" data-shelf-id="{{ shelf.id }}" title="Report Issue">
                                 <i class="fas fa-flag"></i>
                             </button>
                         </td>
@@ -214,6 +214,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/shelf_vision_api.js' %}"></script>
 <script>
 // Compliance by category chart
 const complianceCtx = document.getElementById('complianceChart');

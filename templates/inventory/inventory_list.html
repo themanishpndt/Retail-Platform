@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Inventory - Retail Analytics{% endblock %}
 
@@ -8,10 +9,10 @@
         <h2><i class="fas fa-warehouse me-2"></i>Inventory Management</h2>
     </div>
     <div class="col-auto">
-        <a href="{% url 'inventory_adjust' %}" class="btn btn-warning">
+        <a href="#" class="btn btn-warning" data-action="adjust-stock" id="adjustStockBtn">
             <i class="fas fa-edit me-1"></i>Adjust Stock
         </a>
-        <a href="{% url 'stock_transfer' %}" class="btn btn-primary">
+        <a href="#" class="btn btn-primary" data-action="transfer-stock" id="transferStockBtn">
             <i class="fas fa-exchange-alt me-1"></i>Transfer Stock
         </a>
     </div>
@@ -56,7 +57,7 @@
 <!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form method="get" class="row g-3" data-form="inventory-filter">
             <div class="col-md-3">
                 <select name="store" class="form-select">
                     <option value="">All Stores</option>
@@ -147,4 +148,6 @@
         </div>
     </div>
 </div>
+
+<script src="{% static 'js/inventory_api.js' %}"></script>
 {% endblock %}

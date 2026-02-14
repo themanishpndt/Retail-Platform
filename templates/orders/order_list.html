@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Orders - Retail Analytics{% endblock %}
 
@@ -8,7 +9,7 @@
         <h2><i class="fas fa-shopping-cart me-2"></i>Sales Orders</h2>
     </div>
     <div class="col-auto">
-        <a href="{% url 'order_create' %}" class="btn btn-primary">
+        <a href="#" class="btn btn-primary" data-action="new-order" id="newOrderBtn">
             <i class="fas fa-plus me-1"></i>New Order
         </a>
     </div>
@@ -53,7 +54,7 @@
 <!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form method="get" class="row g-3" data-form="order-filter">
             <div class="col-md-3">
                 <select name="status" class="form-select">
                     <option value="">All Status</option>
@@ -120,13 +121,16 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-info">
+                            <button class="btn btn-sm btn-info" data-action="view-order" data-order-id="{{ order.id }}">
                                 <i class="fas fa-eye"></i>
-                            </a>
+                            </button>
                             {% if order.status == 'pending' %}
-                            <a href="{% url 'order_confirm' order.id %}" class="btn btn-sm btn-success">
+                            <button class="btn btn-sm btn-success" data-action="confirm-order" data-order-id="{{ order.id }}">
                                 <i class="fas fa-check"></i>
-                            </a>
+                            </button>
+                            <button class="btn btn-sm btn-danger" data-action="cancel-order" data-order-id="{{ order.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                             {% endif %}
                         </td>
                     </tr>

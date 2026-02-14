@@ -7,6 +7,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.db.models import Sum, Count, Avg, Q, F, Max, DecimalField
 from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
@@ -1198,4 +1199,111 @@ class StubView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['message'] = 'This feature is under development'
         return context
+
+
+class SettingsView(LoginRequiredMixin, TemplateView):
+    """System Settings Page - Configure SMTP, Security, etc."""
+    template_name = 'settings.html'
+    login_url = 'user:login'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from django.conf import settings
+        
+        context['page_title'] = 'System Settings'
+        context['email_from'] = settings.DEFAULT_FROM_EMAIL
+        context['email_host'] = settings.EMAIL_HOST
+        context['email_port'] = settings.EMAIL_PORT
+        context['user'] = self.request.user
+        
+        return context
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Only allow staff/admin users to access settings
+        if not request.user.is_staff:
+            messages.error(request, 'You do not have permission to access system settings.')
+            return redirect('user:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DashboardTestView(LoginRequiredMixin, View):
+    """Dashboard Connection Test - Shows all backend data"""
+    login_url = 'user:login'
+    
+    def get(self, request):
+        # Calculate 30-day range
+        today = timezone.now().date()
+        thirty_days_ago = today - timedelta(days=30)
+        
+        # Get all orders from last 30 days
+        orders_30days = Order.objects.filter(
+            order_date__gte=timezone.make_aware(datetime.combine(thirty_days_ago, datetime.min.time()))
+        )
+        
+        # 1. Revenue (30 Days)
+        total_revenue = orders_30days.aggregate(Sum('total'))['total__sum'] or 0
+        
+        # 2. Total Orders
+        total_orders = orders_30days.count()
+        
+        # 3. Average Order Value
+        avg_order_value = orders_30days.aggregate(Avg('total'))['total__avg'] or 0
+        
+        # 4. Low Stock Items
+        low_stock_items = InventoryLevel.objects.filter(
+            quantity_on_hand__lt=10
+        ).select_related('product', 'store').count()
+        
+        # 5. Top 5 Products
+        top_products = OrderLine.objects.filter(
+            order__order_date__gte=timezone.make_aware(datetime.combine(thirty_days_ago, datetime.min.time()))
+        ).values('product__name', 'product__sku').annotate(
+            total_sold=Sum('quantity'),
+            total_revenue=Sum('line_total')
+        ).order_by('-total_sold')[:5]
+        
+        # 6. Sales Trend (Daily sales for last 30 days)
+        sales_trend = []
+        for i in range(30):
+            date = today - timedelta(days=i)
+            daily_orders = Order.objects.filter(
+                order_date__date=date
+            )
+            daily_revenue = daily_orders.aggregate(Sum('total'))['total__sum'] or 0
+            sales_trend.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'revenue': float(daily_revenue),
+                'orders': daily_orders.count()
+            })
+        sales_trend.reverse()
+        
+        # 7. Inventory Status by Store
+        inventory_by_store = InventoryLevel.objects.values('store__name').annotate(
+            total_quantity=Sum('quantity_on_hand'),
+            store_id=Sum('store__id')
+        )
+        
+        # 8. Forecast data (next 7 days)
+        forecast_data = []
+        for i in range(7):
+            date = today + timedelta(days=i)
+            forecast_data.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'forecasted_demand': 100 + (i * 15)
+            })
+        
+        context = {
+            'user': request.user,
+            'total_revenue': f"${total_revenue:,.2f}",
+            'total_orders': total_orders,
+            'low_stock_items': low_stock_items,
+            'avg_order_value': f"${avg_order_value:,.2f}",
+            'top_products': list(top_products),
+            'sales_trend': sales_trend,
+            'inventory_by_store': list(inventory_by_store),
+            'forecast_data': forecast_data,
+        }
+        
+        return render(request, 'dashboard_test.html', context)
+
 

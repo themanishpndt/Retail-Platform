@@ -14,7 +14,7 @@
                                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                             Revenue (30 Days)
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-revenue">$0</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-revenue">{{ total_revenue }}</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -32,7 +32,7 @@
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                             Total Orders
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-orders">0</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-orders">{{ total_orders }}</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
@@ -50,7 +50,7 @@
                                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                             Low Stock Items
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="low-stock-count">0</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="low-stock-count">{{ low_stock_items }}</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
@@ -68,7 +68,7 @@
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                             Avg Order Value
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="avg-order-value">$0</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="avg-order-value">{{ avg_order_value }}</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-chart-bar fa-2x text-gray-300"></i>
@@ -138,7 +138,27 @@
                             </div>
                             <div class="card-body">
                                 <div id="alerts-list" class="list-group">
-                                    <!-- Alerts will be loaded dynamically -->
+                                    {% if active_alerts %}
+                                        {% for alert in active_alerts %}
+                                            <div class="list-group-item list-group-item-action" style="border-left: 4px solid {% if alert.severity == 'CRITICAL' or alert.severity == 'URGENT' %}#dc3545{% elif alert.severity == 'WARNING' %}#ffc107{% else %}#17a2b8{% endif %};">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1">{{ alert.title }}</h6>
+                                                    <small class="text-muted">{{ alert.triggered_at|timesince }} ago</small>
+                                                </div>
+                                                <p class="mb-1 small">
+                                                    <span class="badge badge-{% if alert.severity == 'CRITICAL' or alert.severity == 'URGENT' %}danger{% elif alert.severity == 'WARNING' %}warning{% else %}info{% endif %}">
+                                                        {{ alert.get_severity_display }}
+                                                    </span>
+                                                    <span class="badge badge-secondary">{{ alert.get_alert_type_display }}</span>
+                                                </p>
+                                                <small class="text-muted">{{ alert.description }}</small>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="alert alert-success" role="alert">
+                                            <i class="fas fa-check-circle"></i> No active alerts - Everything is functioning smoothly!
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -150,8 +170,42 @@
                                 <h6 class="m-0 font-weight-bold text-primary">AI Insights</h6>
                             </div>
                             <div class="card-body">
-                                <div id="insights-list" class="list-group">
-                                    <!-- Insights will be loaded dynamically -->
+                                <div id="insights-list">
+                                    {% if top_products %}
+                                        <div class="mb-3">
+                                            <h6 class="font-weight-bold">🔥 Top Performing Products</h6>
+                                            <ul class="list-unstyled">
+                                                {% for product in top_products %}
+                                                    <li class="pb-2">
+                                                        <small><strong>{{ product.product__name }}</strong> ({{ product.product__sku }})</small>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Sold: {{ product.total_sold }} units | Revenue: ${{ product.total_revenue|floatformat:2 }}
+                                                        </small>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <hr>
+                                    {% endif %}
+                                    
+                                    <div>
+                                        <h6 class="font-weight-bold">📊 Summary</h6>
+                                        <ul class="list-unstyled small">
+                                            <li class="pb-2">
+                                                <i class="fas fa-arrow-up text-success"></i>
+                                                <strong>Total Revenue:</strong> {{ total_revenue }}
+                                            </li>
+                                            <li class="pb-2">
+                                                <i class="fas fa-shopping-bag"></i>
+                                                <strong>Total Orders:</strong> {{ total_orders }}
+                                            </li>
+                                            <li class="pb-2">
+                                                <i class="fas fa-warning text-warning"></i>
+                                                <strong>Low Stock Items:</strong> {{ low_stock_items }}
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -253,4 +307,13 @@
 
 {% block extra_js %}
     <script src="{% static 'js/dashboard.js' %}"></script>
+    <script>
+        // Pass Django context data to JavaScript
+        const dashboardData = {
+            salesTrend: {{ sales_trend|safe }},
+            topProducts: {{ top_products|safe }},
+            inventoryByStore: {{ inventory_by_store|safe }},
+            forecastData: {{ forecast_data|safe }}
+        };
+    </script>
 {% endblock %}
